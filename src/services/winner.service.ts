@@ -26,14 +26,14 @@ export async function selectWinners(telegram: Telegram, contestId: unknown): Pro
 }
 
 async function announceResults(telegram: Telegram, contest: ContestDocument): Promise<void> {
-  const lines = ['🏆 Contest results are in!', ''];
+  const lines = ["🏆 Konkurs natijalari e'lon qilindi!", ''];
 
   if (contest.winners.length === 0) {
-    lines.push('No participants joined this contest.');
+    lines.push('Bu konkursda hech kim ishtirok etmadi.');
   } else {
     lines.push(
       ...contest.winners.map(
-        (w, i) => `${i + 1}. ${w.username ? '@' + w.username : `id ${w.telegramId}`}`,
+        (w, i) => `${i + 1}. ${w.username ? '@' + w.username : `ID ${w.telegramId}`}`,
       ),
     );
   }

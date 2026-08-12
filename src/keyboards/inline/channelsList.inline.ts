@@ -17,7 +17,7 @@ export function myChannelsKeyboard(channels: ChannelDocument[]) {
   ]);
 
   return Markup.inlineKeyboard([
-    [Markup.button.callback('➕ Add new channel', ADD_NEW_CHANNEL_ACTION)],
+    [Markup.button.callback("➕ Yangi kanal qo'shish", ADD_NEW_CHANNEL_ACTION)],
     ...rows,
   ]);
 }
@@ -34,11 +34,11 @@ export function publishChannelSelectKeyboard(channels: ChannelDocument[]) {
 }
 
 export const requiredChannelsPromptKeyboard = withCancelRow([
-  [Markup.button.callback('Contest without subscription', CONTEST_WITHOUT_SUBSCRIPTION_ACTION)],
+  [Markup.button.callback('Obunasiz konkurs', CONTEST_WITHOUT_SUBSCRIPTION_ACTION)],
 ]);
 
 export const requiredChannelsAddedKeyboard = withCancelRow([
-  [Markup.button.callback("Enough channels, let's move on", REQUIRED_CHANNELS_DONE_ACTION)],
+  [Markup.button.callback('Yetarli, davom etamiz', REQUIRED_CHANNELS_DONE_ACTION)],
 ]);
 
 export function requiredChannelsKeyboardFor(addedCount: number) {

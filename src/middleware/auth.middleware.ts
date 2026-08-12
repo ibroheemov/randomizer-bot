@@ -4,7 +4,7 @@ import { User } from '../models/User.model';
 import { MAIN_MENU_GREETING, mainMenuKeyboard } from '../keyboards/mainMenu.keyboard';
 import { JOIN_CONTEST_ACTION_PREFIX } from '../keyboards/inline/contestPost.inline';
 
-const LOGIN_PROMPT = 'Please login to create a contest!';
+const LOGIN_PROMPT = 'Konkurs yaratish uchun tizimga kiring!';
 
 /** Registers the literal "/admin-<telegramid>" login command. */
 export function registerAuthHandlers(bot: Telegraf<BotContext>): void {
@@ -52,7 +52,7 @@ export async function authGate(ctx: BotContext, next: () => Promise<void>): Prom
   const user = await User.findOne({ telegramId: ctx.from.id }).lean();
   if (!user?.isLoggedIn) {
     if (ctx.callbackQuery) {
-      await ctx.answerCbQuery('Please login first. Send /start.');
+      await ctx.answerCbQuery('Avval tizimga kiring. /start yuboring.');
     } else {
       await ctx.reply(LOGIN_PROMPT);
     }

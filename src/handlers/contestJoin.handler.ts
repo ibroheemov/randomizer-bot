@@ -15,7 +15,9 @@ export function registerContestJoinHandler(bot: Telegraf<BotContext>): void {
 
     if (result.ok) {
       await ctx.answerCbQuery(
-        result.alreadyJoined ? "You're already in this contest!" : '🎉 You joined the contest!',
+        result.alreadyJoined
+          ? 'Siz allaqachon ushbu konkursda ishtirok etyapsiz!'
+          : "🎉 Siz konkursga qo'shildingiz!",
         { show_alert: true },
       );
       return;
@@ -23,10 +25,10 @@ export function registerContestJoinHandler(bot: Telegraf<BotContext>): void {
 
     if (result.reason === 'not_subscribed') {
       const list = result.missing.map((c) => (c.username ? `@${c.username}` : c.title)).join(', ');
-      await ctx.answerCbQuery(`Please subscribe to: ${list}`, { show_alert: true });
+      await ctx.answerCbQuery(`Iltimos, quyidagilarga obuna bo'ling: ${list}`, { show_alert: true });
       return;
     }
 
-    await ctx.answerCbQuery('This contest is not active anymore.', { show_alert: true });
+    await ctx.answerCbQuery('Bu konkurs endi faol emas.', { show_alert: true });
   });
 }

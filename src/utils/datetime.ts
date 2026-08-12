@@ -27,10 +27,10 @@ export function isFuture(date: Date): boolean {
 export function buildDatetimeExamples(): string {
   const now = DateTime.now().setZone(TASHKENT_TIMEZONE);
   const lines = [
-    `${now.plus({ minutes: 10 }).toFormat(DATETIME_FORMAT)} - in 10 minutes`,
-    `${now.plus({ hours: 1 }).toFormat(DATETIME_FORMAT)} - in an hour`,
-    `${now.plus({ days: 1 }).toFormat(DATETIME_FORMAT)} - in a day`,
-    `${now.plus({ weeks: 1 }).toFormat(DATETIME_FORMAT)} - in a week`,
+    `${now.plus({ minutes: 10 }).toFormat(DATETIME_FORMAT)} - 10 daqiqadan keyin`,
+    `${now.plus({ hours: 1 }).toFormat(DATETIME_FORMAT)} - bir soatdan keyin`,
+    `${now.plus({ days: 1 }).toFormat(DATETIME_FORMAT)} - bir kundan keyin`,
+    `${now.plus({ weeks: 1 }).toFormat(DATETIME_FORMAT)} - bir haftadan keyin`,
   ];
-  return `Examples:\n\n${lines.join('\n')}`;
+  return `Misollar:\n\n${lines.join('\n')}`;
 }

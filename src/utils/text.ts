@@ -4,14 +4,14 @@ import { formatTashkentDateTime } from './datetime';
 export function buildReviewMessage(contest: ContestDraft): string {
   const endLine =
     contest.completionType === 'by_time' && contest.completeAt
-      ? `🔚 Contest ends: ${formatTashkentDateTime(contest.completeAt)}`
-      : `🔚 Contest ends: when ${contest.participantsThreshold} participants join`;
+      ? `🔚 Konkurs tugaydi: ${formatTashkentDateTime(contest.completeAt)}`
+      : `🔚 Konkurs ${contest.participantsThreshold} ishtirokchi qo'shilganda tugaydi`;
 
   return [
-    'Carefully double-check your contest',
+    'Konkursingizni diqqat bilan qayta tekshiring',
     '',
     endLine,
-    `🏆 Number of winners: ${contest.winnersCount}`,
+    `🏆 G'oliblar soni: ${contest.winnersCount}`,
   ].join('\n');
 }
 

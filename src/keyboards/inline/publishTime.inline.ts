@@ -6,7 +6,7 @@ export const PUBLISH_SCHEDULED_ACTION = 'publish_scheduled';
 
 export const publishTimeKeyboard = withCancelRow([
   [
-    Markup.button.callback('Right now', PUBLISH_NOW_ACTION),
-    Markup.button.callback('Schedule a publication', PUBLISH_SCHEDULED_ACTION),
+    Markup.button.callback('Hozir', PUBLISH_NOW_ACTION),
+    Markup.button.callback('Nashrni rejalashtirish', PUBLISH_SCHEDULED_ACTION),
   ],
 ]);
