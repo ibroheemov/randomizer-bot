@@ -1,13 +1,13 @@
 import { Markup } from 'telegraf';
 
 export const MAIN_MENU_GREETING =
-  'Hi! 😉\nWant to host a contest on your channel or in the chat? I can easily help you with that 👌';
+  "Salom! 😉\nKanalingizda yoki chatingizda konkurs o'tkazmoqchimisiz? Men sizga bunda osongina yordam bera olaman 👌";
 
 export const MAIN_MENU_BUTTONS = {
-  CREATE_CONTEST: 'Create contest',
-  MY_CONTESTS: 'My contests',
-  MY_CHANNELS: 'My channels',
-  SUPPORT: 'Support',
+  CREATE_CONTEST: 'Konkurs yaratish',
+  MY_CONTESTS: 'Konkurslarim',
+  MY_CHANNELS: 'Kanallarim',
+  SUPPORT: 'Yordam',
 } as const;
 
 export const mainMenuKeyboard = Markup.keyboard([

@@ -3,7 +3,7 @@ import { BotContext } from '../types/context.types';
 import { User } from '../models/User.model';
 import { MAIN_MENU_GREETING, mainMenuKeyboard } from '../keyboards/mainMenu.keyboard';
 
-const LOGIN_PROMPT = 'Please login to create a contest!';
+const LOGIN_PROMPT = 'Konkurs yaratish uchun tizimga kiring!';
 
 export async function sendMainMenuOrLoginPrompt(ctx: BotContext): Promise<void> {
   if (!ctx.from) return;

@@ -12,13 +12,13 @@ import { ADD_CHANNEL_WIZARD_ID } from '../scenes/addChannel.wizard';
 import { Channel } from '../models/Channel.model';
 
 const ADD_CHANNEL_INSTRUCTIONS =
-  'Instructions\n\nAdd the bot (@BestRandom_bot) to your channel or chat as an administrator with posting permissions. Then send me the channel in the @channelname format. If you want to add a private channel, forward a message from it, or copy and send the bot a link to any message from the private channel.\n\n⚠️ If you want to use the bot in a group (chat), be sure to grant it posting permissions.\n\n/start - for the main menu';
+  "Yo'riqnoma\n\nBotni (@BestRandom_bot) kanalingiz yoki chatingizga xabar joylash huquqiga ega administrator sifatida qo'shing. Keyin menga kanalni @kanalnomi formatida yuboring. Agar shaxsiy (yopiq) kanal qo'shmoqchi bo'lsangiz, undan xabarni forward qiling yoki shu kanaldagi istalgan xabar havolasini nusxalab yuboring.\n\n⚠️ Botdan guruhda (chatda) foydalanmoqchi bo'lsangiz, unga xabar joylash huquqini berganingizga ishonch hosil qiling.\n\n/start - bosh menyu uchun";
 
 export function registerMyChannelsHandlers(bot: Telegraf<BotContext>): void {
   bot.hears(MAIN_MENU_BUTTONS.MY_CHANNELS, async (ctx) => {
     if (!ctx.from) return;
     const channels = await listUserChannels(ctx.from.id);
-    await ctx.reply("ℹ️ Channels you've added:", myChannelsKeyboard(channels));
+    await ctx.reply("ℹ️ Siz qo'shgan kanallar:", myChannelsKeyboard(channels));
   });
 
   bot.action(ADD_NEW_CHANNEL_ACTION, async (ctx) => {

@@ -75,18 +75,18 @@ function extractMedia(
 }
 
 async function promptCompletionType(ctx: BotContext): Promise<void> {
-  await ctx.reply('🗓 How to complete the competition?', completionTypeKeyboard);
+  await ctx.reply('🗓 Konkurs qanday yakunlansin?', completionTypeKeyboard);
 }
 
 async function promptDatetime(ctx: BotContext, kind: 'publish' | 'complete'): Promise<void> {
   const question =
     kind === 'publish'
-      ? '⏰ When should the contest be published? (Specify the time in dd.mm.yy hh:mm format)'
-      : '🏁 When do you need to determine the winner? (Enter the time in the format dd.mm.yy hh:mm)';
+      ? "⏰ Konkurs qachon e'lon qilinsin? (Vaqtni dd.mm.yy hh:mm formatida kiriting)"
+      : "🏁 G'olibni qachon aniqlash kerak? (Vaqtni dd.mm.yy hh:mm formatida kiriting)";
   const timezoneNote =
     kind === 'publish'
-      ? 'The bot operates on Tashkent time (GMT+5), Uzbekistan.'
-      : 'The bot lives according to time (GMT+5) Tashkent, Uzbekistan';
+      ? "Bot Toshkent vaqti (GMT+5), O'zbekiston bo'yicha ishlaydi."
+      : "Bot Toshkent (GMT+5), O'zbekiston vaqti bo'yicha ishlaydi";
 
   await ctx.reply(question);
   await ctx.reply(timezoneNote);
@@ -119,7 +119,7 @@ export const createContestWizard = new Scenes.WizardScene<BotContext>(
     const state = getState(ctx);
     state.contest = createEmptyContestDraft();
     await ctx.reply(
-      'Create a contest\n\n✉️ Submit your contest text. You can also submit an image, video, or GIF along with the text, using markup.\n❗️ You can only use one media file.\n\nThe contest bot is completely free and transparent. It will be happy if you include a link to it in your contest post. Thank you. @BestRandom_bot',
+      "Konkurs yaratish\n\n✉️ Konkurs matningizni yuboring. Matn bilan birga rasm, video yoki GIF ham yuborishingiz mumkin, formatlashdan foydalanib.\n❗️ Faqat bitta media fayldan foydalanishingiz mumkin.\n\nKonkurs boti butunlay bepul va shaffof ishlaydi. Konkurs postingizga bot havolasini qo'shsangiz, xursand bo'lamiz. Rahmat. @BestRandom_bot",
       cancelInlineKeyboard,
     );
     return ctx.wizard.next();
@@ -129,7 +129,10 @@ export const createContestWizard = new Scenes.WizardScene<BotContext>(
     if (!ctx.message) return;
     const { mediaType, mediaFileId, text } = extractMedia(ctx.message);
     if (!text) {
-      await ctx.reply('Please send text (optionally with one photo/video/GIF attached).', cancelInlineKeyboard);
+      await ctx.reply(
+        "Iltimos, matn yuboring (xohlasangiz bitta rasm/video/GIF biriktirishingiz mumkin).",
+        cancelInlineKeyboard,
+      );
       return;
     }
 
@@ -138,9 +141,9 @@ export const createContestWizard = new Scenes.WizardScene<BotContext>(
     state.contest.mediaType = mediaType;
     state.contest.mediaFileId = mediaFileId;
 
-    await ctx.reply('✅ Text added');
+    await ctx.reply("✅ Matn qo'shildi");
     await ctx.reply(
-      '📰 Submit the text that will appear on the button, or select one of the button options.',
+      "📰 Tugmada ko'rinadigan matnni yuboring yoki quyidagi variantlardan birini tanlang.",
       buttonPresetsKeyboard,
     );
     return ctx.wizard.next();
@@ -162,14 +165,14 @@ export const createContestWizard = new Scenes.WizardScene<BotContext>(
     }
 
     if (!buttonText) {
-      await ctx.reply('Please choose a preset or send the button text.', buttonPresetsKeyboard);
+      await ctx.reply('Iltimos, tayyor variantni tanlang yoki tugma matnini yuboring.', buttonPresetsKeyboard);
       return;
     }
 
     state.contest.buttonText = buttonText;
-    await ctx.reply('✅ Button text saved');
+    await ctx.reply('✅ Tugma matni saqlandi');
     await ctx.reply(
-      '📊 Add channels that users will need to subscribe to in order to participate in the contest.\nSubscription to the channel hosting the contest is required and enabled by default.\n\nTo add a channel:\n1. Add the bot (@BestRandom_bot) to your channel as an administrator (this is necessary so the bot can check whether the user is subscribed to the channel).\n2. Send the channel to the bot in the @channelname format (or forward a message from the channel).\n\n⚠️ If you want to allow users to participate in the contest without subscribing to the channel, click the button below:',
+      "📊 Konkursda ishtirok etish uchun foydalanuvchilar obuna bo'lishi kerak bo'lgan kanallarni qo'shing.\nKonkurs joylashtirilgan kanalga obuna bo'lish shart va bu sozlama sukut bo'yicha yoqilgan.\n\nKanal qo'shish uchun:\n1. Botni (@BestRandom_bot) kanalingizga administrator sifatida qo'shing (bu foydalanuvchining kanalga obuna bo'lgan-bo'lmaganini tekshirish uchun zarur).\n2. Kanalni botga @kanalnomi formatida yuboring (yoki kanaldagi xabarni forward qiling).\n\n⚠️ Agar foydalanuvchilarga kanalga obuna bo'lmasdan ham konkursda ishtirok etishga ruxsat bermoqchi bo'lsangiz, quyidagi tugmani bosing:",
       requiredChannelsPromptKeyboard,
     );
     return ctx.wizard.next();
@@ -186,8 +189,8 @@ export const createContestWizard = new Scenes.WizardScene<BotContext>(
           state.contest.requireSubscription = false;
           state.contest.requiredChannels = [];
         }
-        await ctx.reply('✅ Saved');
-        await ctx.reply('🧮 How many winners should the bot choose?');
+        await ctx.reply('✅ Saqlandi');
+        await ctx.reply("🧮 Bot nechta g'olibni tanlashi kerak?");
         return ctx.wizard.next();
       }
       return;
@@ -205,7 +208,7 @@ export const createContestWizard = new Scenes.WizardScene<BotContext>(
 
       if (!resolved) {
         await ctx.reply(
-          'I could not find that channel. Send @username or forward a message from it.',
+          "Bunday kanal topilmadi. @username yuboring yoki undan xabarni forward qiling.",
           requiredChannelsKeyboardFor(currentCount),
         );
         return;
@@ -214,7 +217,7 @@ export const createContestWizard = new Scenes.WizardScene<BotContext>(
       const botIsAdmin = await isBotAdmin(ctx.telegram, resolved.chatId);
       if (!botIsAdmin) {
         await ctx.reply(
-          `⚠️ I'm not an administrator in "${resolved.title}". Please add @BestRandom_bot as an administrator there first, then send it again.`,
+          `⚠️ Men "${resolved.title}" kanalida administrator emasman. Iltimos, avval @BestRandom_bot ni u yerga administrator qilib qo'shing, so'ng qaytadan yuboring.`,
           requiredChannelsKeyboardFor(currentCount),
         );
         return;
@@ -226,7 +229,7 @@ export const createContestWizard = new Scenes.WizardScene<BotContext>(
         username: resolved.username,
       });
       await ctx.reply(
-        "✅ The channel has been added. You can add another one (simply keep sending channels) or proceed with creating the contest:\n\nDo not remove the bot's channel administrator rights, otherwise subscription verification will not work!",
+        "✅ Kanal qo'shildi. Yana bittasini qo'shishingiz mumkin (kanallarni yuborishda davom eting) yoki konkurs yaratishni davom ettiring:\n\nBotning kanaldagi administrator huquqlarini olib tashlamang, aks holda obunani tekshirib bo'lmaydi!",
         requiredChannelsKeyboardFor(state.contest.requiredChannels.length),
       );
     }
@@ -236,24 +239,24 @@ export const createContestWizard = new Scenes.WizardScene<BotContext>(
     if (!ctx.message || !('text' in ctx.message) || !ctx.from) return;
     const count = Number(ctx.message.text.trim());
     if (!Number.isInteger(count) || count <= 0) {
-      await ctx.reply('Please send a valid whole number greater than 0.');
+      await ctx.reply('Iltimos, 0 dan katta butun son yuboring.');
       return;
     }
 
     const state = getState(ctx);
     state.contest.winnersCount = count;
-    await ctx.reply(`✅ Number of winners saved: ${count}`);
+    await ctx.reply(`✅ G'oliblar soni saqlandi: ${count}`);
 
     const channels = await listUserChannels(ctx.from.id);
     if (channels.length === 0) {
       await ctx.reply(
-        'You have not added any channels yet. Add one from "My channels" first, then start over with "Create contest".',
+        'Sizda hali kanallar yo\'q. Avval "Kanallarim" bo\'limidan kanal qo\'shing, so\'ng "Konkurs yaratish"ni qaytadan boshlang.',
         mainMenuKeyboard,
       );
       return ctx.scene.leave();
     }
 
-    await ctx.reply('🗓 On which channel will we publish the competition?', publishChannelSelectKeyboard(channels));
+    await ctx.reply("🗓 Konkursni qaysi kanalda e'lon qilamiz?", publishChannelSelectKeyboard(channels));
     return ctx.wizard.next();
   },
   // Step 5 — capture publish channel, prompt publish time.
@@ -265,7 +268,7 @@ export const createContestWizard = new Scenes.WizardScene<BotContext>(
     const chatId = Number(data.slice(SELECT_PUBLISH_CHANNEL_ACTION_PREFIX.length));
     const channel = await findUserChannelByChatId(ctx.from.id, chatId);
     if (!channel) {
-      await ctx.answerCbQuery('Channel not found, please pick again.');
+      await ctx.answerCbQuery('Kanal topilmadi, qaytadan tanlang.');
       return;
     }
     await ctx.answerCbQuery();
@@ -274,7 +277,7 @@ export const createContestWizard = new Scenes.WizardScene<BotContext>(
     state.contest.publishChannelId = channel.chatId;
     state.contest.publishChannelTitle = channel.title;
 
-    await ctx.reply('⏰ When should I publish the competition?', publishTimeKeyboard);
+    await ctx.reply("⏰ Konkursni qachon e'lon qilay?", publishTimeKeyboard);
     return ctx.wizard.next();
   },
   // Step 6 — capture publish-time choice.
@@ -286,7 +289,7 @@ export const createContestWizard = new Scenes.WizardScene<BotContext>(
 
     if (data === PUBLISH_NOW_ACTION) {
       state.contest.publishType = 'now';
-      await ctx.reply('✅ The publication time has been selected');
+      await ctx.reply("✅ E'lon qilish vaqti tanlandi");
       await promptCompletionType(ctx);
       return ctx.wizard.selectStep(8);
     }
@@ -304,12 +307,12 @@ export const createContestWizard = new Scenes.WizardScene<BotContext>(
 
     const parsed = parseTashkentDateTime(ctx.message.text);
     if (!parsed || !isFuture(parsed)) {
-      await ctx.reply('Please send a valid future date in the format dd.mm.yyyy hh:mm.');
+      await ctx.reply('Iltimos, dd.mm.yyyy hh:mm formatida haqiqiy kelajakdagi sanani yuboring.');
       return;
     }
 
     state.contest.publishAt = parsed;
-    await ctx.reply('✅ The publication time has been selected');
+    await ctx.reply("✅ E'lon qilish vaqti tanlandi");
     await promptCompletionType(ctx);
     return ctx.wizard.selectStep(8);
   },
@@ -323,7 +326,7 @@ export const createContestWizard = new Scenes.WizardScene<BotContext>(
     if (data === COMPLETE_BY_PARTICIPANTS_ACTION) {
       state.contest.completionType = 'by_participants';
       await ctx.reply(
-        '🏁 Specify the number of participants for the contest:\n\n❗️ Please note: a "participant" is someone who has actually entered the contest. The selection will be based on the number of participants (those who clicked the contest button), not the channel\'s subscriber count.',
+        '🏁 Konkurs uchun ishtirokchilar sonini belgilang:\n\n❗️ E\'tibor bering: "ishtirokchi" — bu konkursga haqiqatan ham qo\'shilgan kishi. Tanlov ishtirokchilar soniga (konkurs tugmasini bosganlar) asoslanadi, kanal obunachilari soniga emas.',
       );
       return ctx.wizard.selectStep(9);
     }
@@ -339,13 +342,13 @@ export const createContestWizard = new Scenes.WizardScene<BotContext>(
     if (!ctx.message || !('text' in ctx.message)) return;
     const count = Number(ctx.message.text.trim());
     if (!Number.isInteger(count) || count <= 0) {
-      await ctx.reply('Please send a valid whole number greater than 0.');
+      await ctx.reply('Iltimos, 0 dan katta butun son yuboring.');
       return;
     }
 
     const state = getState(ctx);
     state.contest.participantsThreshold = count;
-    await ctx.reply(`✅ Number of participants retained for determining results: ${count}`);
+    await ctx.reply(`✅ Natijalarni aniqlash uchun ishtirokchilar soni saqlandi: ${count}`);
     await sendReviewScreen(ctx);
     return ctx.wizard.selectStep(11);
   },
@@ -358,13 +361,13 @@ export const createContestWizard = new Scenes.WizardScene<BotContext>(
     const publishAt = state.contest.publishType === 'now' ? new Date() : state.contest.publishAt;
     if (!parsed || !isFuture(parsed) || (publishAt && parsed <= publishAt)) {
       await ctx.reply(
-        `Please send a valid future date (after the publish time${publishAt ? ` — ${formatTashkentDateTime(publishAt)}` : ''}) in the format dd.mm.yyyy hh:mm.`,
+        `Iltimos, dd.mm.yyyy hh:mm formatida haqiqiy kelajakdagi sanani yuboring (e'lon qilish vaqtidan${publishAt ? ` — ${formatTashkentDateTime(publishAt)}` : ''} keyin bo'lishi kerak).`,
       );
       return;
     }
 
     state.contest.completeAt = parsed;
-    await ctx.reply('✅ Time for summing up the results has been saved');
+    await ctx.reply('✅ Natijalarni yakunlash vaqti saqlandi');
     await sendReviewScreen(ctx);
     return ctx.wizard.selectStep(11);
   },
@@ -389,7 +392,7 @@ export const createContestWizard = new Scenes.WizardScene<BotContext>(
       await ctx.answerCbQuery();
       await createContest(ctx.from.id, state.contest, ctx.telegram);
       await ctx.reply(
-        '✅ The contest has been saved and is being prepared for publication.\n\nTo open the menu, type /start',
+        "✅ Konkurs saqlandi va e'lon qilishga tayyorlanmoqda.\n\nMenyuni ochish uchun /start deb yozing",
       );
       return ctx.scene.leave();
     }
@@ -398,7 +401,7 @@ export const createContestWizard = new Scenes.WizardScene<BotContext>(
 
 createContestWizard.action(CANCEL_ACTION, async (ctx) => {
   await ctx.answerCbQuery();
-  await ctx.reply('Action cancelled!', mainMenuKeyboard);
+  await ctx.reply('Amal bekor qilindi!', mainMenuKeyboard);
   return ctx.scene.leave();
 });
 

@@ -6,7 +6,7 @@ export const COMPLETE_BY_PARTICIPANTS_ACTION = 'complete_by_participants';
 
 export const completionTypeKeyboard = withCancelRow([
   [
-    Markup.button.callback('By time', COMPLETE_BY_TIME_ACTION),
-    Markup.button.callback('By number of participants', COMPLETE_BY_PARTICIPANTS_ACTION),
+    Markup.button.callback("Vaqt bo'yicha", COMPLETE_BY_TIME_ACTION),
+    Markup.button.callback("Ishtirokchilar soni bo'yicha", COMPLETE_BY_PARTICIPANTS_ACTION),
   ],
 ]);

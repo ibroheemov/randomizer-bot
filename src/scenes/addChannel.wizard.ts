@@ -20,9 +20,9 @@ export const addChannelWizard = new Scenes.WizardScene<BotContext>(
   ADD_CHANNEL_WIZARD_ID,
   async (ctx) => {
     const state = getState(ctx);
-    const kindLabel = state.kind === 'group' ? 'group' : 'channel';
+    const kindLabel = state.kind === 'group' ? 'guruh' : 'kanal';
     await ctx.reply(
-      `Send me the ${kindLabel} in the @username format, or forward a message from it (for private chats: forward a message, or send a link to any message from it).`,
+      `${kindLabel}ni menga @username formatida yuboring yoki undan xabarni forward qiling (yopiq chatlar uchun: xabarni forward qiling yoki undagi istalgan xabar havolasini yuboring).`,
     );
     return ctx.wizard.next();
   },
@@ -39,7 +39,7 @@ export const addChannelWizard = new Scenes.WizardScene<BotContext>(
 
     const resolved = await resolveChatFromInput(ctx.telegram, { text, forwardChatId });
     if (!resolved) {
-      await ctx.reply('I could not find that chat. Send @username or forward a message from it.');
+      await ctx.reply("Bunday chat topilmadi. @username yuboring yoki undan xabarni forward qiling.");
       return;
     }
 
@@ -47,8 +47,8 @@ export const addChannelWizard = new Scenes.WizardScene<BotContext>(
     if (!expectedTypes.includes(resolved.type)) {
       await ctx.reply(
         state.kind === 'group'
-          ? 'That looks like a channel, not a group. Please send a group instead, or use "Add channel".'
-          : 'That looks like a group, not a channel. Please send a channel instead, or use "Add group".',
+          ? "Bu guruh emas, kanalga o'xshaydi. Iltimos, guruh yuboring yoki \"Kanal qo'shish\"dan foydalaning."
+          : "Bu kanal emas, guruhga o'xshaydi. Iltimos, kanal yuboring yoki \"Guruh qo'shish\"dan foydalaning.",
       );
       return;
     }
@@ -56,14 +56,14 @@ export const addChannelWizard = new Scenes.WizardScene<BotContext>(
     const botIsAdmin = await isBotAdmin(ctx.telegram, resolved.chatId);
     if (!botIsAdmin) {
       await ctx.reply(
-        '⚠️ I need to be an administrator there with posting permissions first. Add me, then send it again.',
+        "⚠️ Avval meni u yerga xabar joylash huquqiga ega administrator qilib qo'shishingiz kerak. Qo'shgach, qaytadan yuboring.",
       );
       return;
     }
 
     const userIsAdmin = await isUserAdmin(ctx.telegram, resolved.chatId, ctx.from.id);
     if (!userIsAdmin) {
-      await ctx.reply('⚠️ You need to be an administrator of that chat to add it.');
+      await ctx.reply("⚠️ Uni qo'shish uchun siz shu chatning administratori bo'lishingiz kerak.");
       return;
     }
 
@@ -75,7 +75,7 @@ export const addChannelWizard = new Scenes.WizardScene<BotContext>(
       username: resolved.username,
     });
 
-    await ctx.reply(`✅ "${resolved.title}" has been added.`, mainMenuKeyboard);
+    await ctx.reply(`✅ "${resolved.title}" qo'shildi.`, mainMenuKeyboard);
     return ctx.scene.leave();
   },
 );
