@@ -1,10 +1,12 @@
 import { Markup } from 'telegraf';
-import { Types } from 'mongoose';
 
-export const JOIN_CONTEST_ACTION_PREFIX = 'join_contest:';
+export const JOIN_PAYLOAD_PREFIX = 'join_';
 
-export function contestPostKeyboard(contestId: Types.ObjectId | string, buttonText: string) {
-  return Markup.inlineKeyboard([
-    Markup.button.callback(buttonText, `${JOIN_CONTEST_ACTION_PREFIX}${contestId}`),
-  ]);
+export function contestJoinDeepLink(botUsername: string, contestId: string): string {
+  return `https://t.me/${botUsername}?start=${JOIN_PAYLOAD_PREFIX}${contestId}`;
+}
+
+/** Tapping this opens a private chat with the bot and sends "/start join_<contestId>". */
+export function contestPostKeyboard(botUsername: string, contestId: string, buttonText: string) {
+  return Markup.inlineKeyboard([Markup.button.url(buttonText, contestJoinDeepLink(botUsername, contestId))]);
 }

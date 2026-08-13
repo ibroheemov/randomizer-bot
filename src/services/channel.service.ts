@@ -1,5 +1,6 @@
 import { Telegram } from 'telegraf';
 import { Channel, ChannelDocument, ChannelType } from '../models/Channel.model';
+import { UserDocument } from '../models/User.model';
 
 export interface ResolvedChat {
   chatId: number;
@@ -89,6 +90,12 @@ export async function upsertChannel(data: {
 
 export async function listUserChannels(ownerTelegramId: number): Promise<ChannelDocument[]> {
   return Channel.find({ ownerTelegramId }).sort({ addedAt: -1 });
+}
+
+/** Superadmin sees every admin's channels; everyone else sees only their own. */
+export async function listVisibleChannels(user: UserDocument): Promise<ChannelDocument[]> {
+  const filter = user.role === 'superadmin' ? {} : { ownerTelegramId: user.telegramId };
+  return Channel.find(filter).sort({ addedAt: -1 });
 }
 
 export async function findUserChannelByChatId(

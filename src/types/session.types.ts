@@ -27,6 +27,10 @@ export interface AddChannelWizardState {
   kind: 'channel' | 'group';
 }
 
+export interface NotifyWinnersWizardState {
+  contestId: string;
+}
+
 export function createEmptyContestDraft(): ContestDraft {
   return {
     requiredChannels: [],

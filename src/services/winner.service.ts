@@ -2,6 +2,7 @@ import { Telegram } from 'telegraf';
 import { Contest, ContestDocument } from '../models/Contest.model';
 import { Participant } from '../models/Participant.model';
 import { sampleWithoutReplacement } from '../utils/random';
+import { contestDetailKeyboard } from '../keyboards/inline/contestDetail.inline';
 
 /**
  * Atomically claims the contest (published -> completed) before computing winners, so a
@@ -25,7 +26,7 @@ export async function selectWinners(telegram: Telegram, contestId: unknown): Pro
   if (updated) await announceResults(telegram, updated);
 }
 
-async function announceResults(telegram: Telegram, contest: ContestDocument): Promise<void> {
+function buildResultsLines(contest: ContestDocument): string[] {
   const lines = ["🏆 Konkurs natijalari e'lon qilindi!", ''];
 
   if (contest.winners.length === 0) {
@@ -38,9 +39,26 @@ async function announceResults(telegram: Telegram, contest: ContestDocument): Pr
     );
   }
 
+  return lines;
+}
+
+async function announceResults(telegram: Telegram, contest: ContestDocument): Promise<void> {
+  const lines = buildResultsLines(contest);
+
   try {
     await telegram.sendMessage(contest.publishChannelId, lines.join('\n'));
   } catch (err) {
-    console.error('[winner.service] failed to announce results', err);
+    console.error('[winner.service] failed to announce results in channel', err);
+  }
+
+  try {
+    const ownerLines = [`🏁 "${contest.text.slice(0, 40)}" konkursi yakunlandi.`, '', ...lines];
+    const keyboard = contestDetailKeyboard(String(contest._id), {
+      canNotify: contest.winners.length > 0,
+      canRemove: false,
+    });
+    await telegram.sendMessage(contest.ownerTelegramId, ownerLines.join('\n'), keyboard);
+  } catch (err) {
+    console.error('[winner.service] failed to notify contest owner', err);
   }
 }
