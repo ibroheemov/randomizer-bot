@@ -12,17 +12,33 @@ const REGISTERABLE_CHAT_TYPES: ChannelType[] = ['channel', 'group', 'supergroup'
  * don't have to separately send @channelname afterward. Only registers it if whoever did the
  * promoting is already an admin/superadmin in our system — a stranger promoting the bot
  * elsewhere doesn't get a free channel entry.
+ *
+ * Also tracks block/unblock: Telegram reports a user blocking the bot as the bot's own
+ * "my_chat_member" status in that private chat flipping to "kicked" (and back to "member"
+ * on unblock/restart) — this is the reliable, proactive way to know, rather than only
+ * finding out reactively the next time a message send happens to fail.
  */
 export function registerBotMembershipHandler(bot: Telegraf<BotContext>): void {
   bot.on('my_chat_member', async (ctx) => {
     const update = ctx.myChatMember;
+    const chat = update.chat;
     const newStatus = update.new_chat_member.status;
     const oldStatus = update.old_chat_member.status;
 
+    if (chat.type === 'private') {
+      const isBlockedNow = newStatus === 'kicked';
+      const wasBlockedBefore = oldStatus === 'kicked';
+      if (isBlockedNow !== wasBlockedBefore) {
+        await User.findOneAndUpdate(
+          { telegramId: chat.id },
+          isBlockedNow ? { $set: { blockedAt: new Date() } } : { $unset: { blockedAt: 1 } },
+        );
+      }
+      return;
+    }
+
     // Only react to a fresh promotion to admin, not e.g. a permissions tweak while already admin.
     if (newStatus !== 'administrator' || oldStatus === 'administrator') return;
-
-    const chat = update.chat;
     if (!REGISTERABLE_CHAT_TYPES.includes(chat.type as ChannelType)) return;
 
     const promoter = await User.findOne({ telegramId: update.from.id });

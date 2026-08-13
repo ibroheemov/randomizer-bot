@@ -69,10 +69,19 @@ function extractMedia(
   if ('animation' in message && message.animation) {
     return { mediaType: 'animation', mediaFileId: message.animation.file_id, text: message.caption };
   }
+  if ('document' in message && message.document) {
+    return { mediaType: 'document', mediaFileId: message.document.file_id, text: message.caption };
+  }
   if ('text' in message) {
     return { text: message.text };
   }
   return {};
+}
+
+function isApkDocument(message: IncomingMessage): boolean {
+  if (!('document' in message) || !message.document) return true;
+  const fileName = message.document.file_name ?? '';
+  return fileName.toLowerCase().endsWith('.apk');
 }
 
 async function promptCompletionType(ctx: BotContext): Promise<void> {
@@ -106,6 +115,8 @@ async function sendReviewScreen(ctx: BotContext): Promise<void> {
     await ctx.replyWithVideo(contest.mediaFileId, { caption: contest.text, ...previewExtra });
   } else if (contest.mediaType === 'animation' && contest.mediaFileId) {
     await ctx.replyWithAnimation(contest.mediaFileId, { caption: contest.text, ...previewExtra });
+  } else if (contest.mediaType === 'document' && contest.mediaFileId) {
+    await ctx.replyWithDocument(contest.mediaFileId, { caption: contest.text, ...previewExtra });
   } else {
     await ctx.reply(contest.text as string, previewExtra);
   }
@@ -120,7 +131,7 @@ export const createContestWizard = new Scenes.WizardScene<BotContext>(
     const state = getState(ctx);
     state.contest = createEmptyContestDraft();
     await ctx.reply(
-      "Konkurs yaratish\n\n✉️ Konkurs matningizni yuboring. Matn bilan birga rasm, video yoki GIF ham yuborishingiz mumkin, formatlashdan foydalanib.\n❗️ Faqat bitta media fayldan foydalanishingiz mumkin.\n\nKonkurs boti butunlay bepul va shaffof ishlaydi. Konkurs postingizga bot havolasini qo'shsangiz, xursand bo'lamiz. Rahmat. @BestRandom_bot",
+      "Konkurs yaratish\n\n✉️ Konkurs matningizni yuboring. Matn bilan birga rasm, video, GIF yoki .apk fayl ham yuborishingiz mumkin, formatlashdan foydalanib.\n❗️ Faqat bitta media fayldan foydalanishingiz mumkin.\n\nKonkurs boti butunlay bepul va shaffof ishlaydi. Konkurs postingizga bot havolasini qo'shsangiz, xursand bo'lamiz. Rahmat. @BestRandom_bot",
       cancelInlineKeyboard,
     );
     return ctx.wizard.next();
@@ -128,10 +139,19 @@ export const createContestWizard = new Scenes.WizardScene<BotContext>(
   // Step 1 — capture text/media, prompt button text.
   async (ctx) => {
     if (!ctx.message) return;
+
+    if (!isApkDocument(ctx.message)) {
+      await ctx.reply(
+        'Hujjat sifatida faqat .apk fayllarni yuborishingiz mumkin.',
+        cancelInlineKeyboard,
+      );
+      return;
+    }
+
     const { mediaType, mediaFileId, text } = extractMedia(ctx.message);
     if (!text) {
       await ctx.reply(
-        "Iltimos, matn yuboring (xohlasangiz bitta rasm/video/GIF biriktirishingiz mumkin).",
+        "Iltimos, matn yuboring (xohlasangiz bitta rasm/video/GIF yoki .apk fayl biriktirishingiz mumkin).",
         cancelInlineKeyboard,
       );
       return;

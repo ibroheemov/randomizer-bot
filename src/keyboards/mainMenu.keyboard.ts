@@ -10,6 +10,9 @@ export const MAIN_MENU_BUTTONS = {
   MY_CHANNELS: 'Kanallarim',
   SUPPORT: 'Yordam',
   NOTIFY_USERS: "📢 Foydalanuvchilarga xabar yuborish",
+  BOT_USERS: '👥 Bot foydalanuvchilari',
+  ADMINS: '👤 Adminlar',
+  ADD_ADMIN: "➕ Admin qo'shish",
 } as const;
 
 export function mainMenuKeyboard(role: Role) {
@@ -19,7 +22,8 @@ export function mainMenuKeyboard(role: Role) {
   ];
 
   if (role === 'superadmin') {
-    rows.push([MAIN_MENU_BUTTONS.NOTIFY_USERS]);
+    rows.push([MAIN_MENU_BUTTONS.NOTIFY_USERS, MAIN_MENU_BUTTONS.BOT_USERS]);
+    rows.push([MAIN_MENU_BUTTONS.ADMINS, MAIN_MENU_BUTTONS.ADD_ADMIN]);
   }
 
   return Markup.keyboard(rows).resize().persistent();
