@@ -8,7 +8,8 @@ import {
   upsertChannel,
 } from '../services/channel.service';
 import { mainMenuKeyboard } from '../keyboards/mainMenu.keyboard';
-import { sendMainMenuOrLoginPrompt } from '../handlers/start.handler';
+import { sendStartMessage } from '../handlers/start.handler';
+import { getOrCreateUser } from '../services/user.service';
 
 export const ADD_CHANNEL_WIZARD_ID = 'addChannelWizard';
 
@@ -75,12 +76,13 @@ export const addChannelWizard = new Scenes.WizardScene<BotContext>(
       username: resolved.username,
     });
 
-    await ctx.reply(`✅ "${resolved.title}" qo'shildi.`, mainMenuKeyboard);
+    const user = await getOrCreateUser(ctx.from);
+    await ctx.reply(`✅ "${resolved.title}" qo'shildi.`, mainMenuKeyboard(user.role));
     return ctx.scene.leave();
   },
 );
 
 addChannelWizard.command('start', async (ctx) => {
   await ctx.scene.leave();
-  await sendMainMenuOrLoginPrompt(ctx);
+  await sendStartMessage(ctx);
 });

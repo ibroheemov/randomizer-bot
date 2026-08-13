@@ -5,7 +5,9 @@ import { startScheduler, stopScheduler } from './services/scheduler.service';
 async function main(): Promise<void> {
   await connectDb();
   await startScheduler(bot.telegram);
-  await bot.launch();
+  // "my_chat_member" isn't delivered by default — it's needed to detect the bot being
+  // promoted to admin in a channel/group (see handlers/botMembership.handler.ts).
+  await bot.launch({ allowedUpdates: ['message', 'callback_query', 'my_chat_member'] });
   console.log('[bot] launched');
 }
 

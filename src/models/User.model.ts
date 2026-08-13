@@ -1,11 +1,12 @@
 import { Document, Schema, model } from 'mongoose';
+import { Role } from '../types/role.types';
 
 export interface UserDocument extends Document {
   telegramId: number;
   username?: string;
   firstName?: string;
   lastName?: string;
-  isLoggedIn: boolean;
+  role: Role;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -16,7 +17,7 @@ const userSchema = new Schema<UserDocument>(
     username: { type: String },
     firstName: { type: String },
     lastName: { type: String },
-    isLoggedIn: { type: Boolean, default: false },
+    role: { type: String, enum: ['user', 'admin', 'superadmin'], default: 'user', index: true },
   },
   { timestamps: true },
 );

@@ -30,6 +30,7 @@ export interface ContestDocument extends Document {
   messageId?: number;
   participantsCount: number;
   winners: ContestWinner[];
+  removedAt?: Date;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -79,6 +80,7 @@ const contestSchema = new Schema<ContestDocument>(
     messageId: { type: Number },
     participantsCount: { type: Number, default: 0 },
     winners: { type: [winnerSchema], default: [] },
+    removedAt: { type: Date },
   },
   { timestamps: true },
 );

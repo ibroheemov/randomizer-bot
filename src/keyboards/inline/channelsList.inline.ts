@@ -12,7 +12,7 @@ export function myChannelsKeyboard(channels: ChannelDocument[]) {
   const rows = channels.map((channel) => [
     Markup.button.callback(
       `${channel.type === 'channel' ? '📢' : '👥'} ${channel.title}`,
-      `${CHANNEL_INFO_ACTION_PREFIX}${channel.chatId}`,
+      `${CHANNEL_INFO_ACTION_PREFIX}${channel.ownerTelegramId}:${channel.chatId}`,
     ),
   ]);
 

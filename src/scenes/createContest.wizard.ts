@@ -44,7 +44,8 @@ import {
   parseTashkentDateTime,
 } from '../utils/datetime';
 import { buildReviewMessage } from '../utils/text';
-import { sendMainMenuOrLoginPrompt } from '../handlers/start.handler';
+import { sendStartMessage } from '../handlers/start.handler';
+import { getOrCreateUser } from '../services/user.service';
 
 export const CREATE_CONTEST_WIZARD_ID = 'createContestWizard';
 
@@ -249,9 +250,10 @@ export const createContestWizard = new Scenes.WizardScene<BotContext>(
 
     const channels = await listUserChannels(ctx.from.id);
     if (channels.length === 0) {
+      const user = await getOrCreateUser(ctx.from);
       await ctx.reply(
         'Sizda hali kanallar yo\'q. Avval "Kanallarim" bo\'limidan kanal qo\'shing, so\'ng "Konkurs yaratish"ni qaytadan boshlang.',
-        mainMenuKeyboard,
+        mainMenuKeyboard(user.role),
       );
       return ctx.scene.leave();
     }
@@ -401,14 +403,15 @@ export const createContestWizard = new Scenes.WizardScene<BotContext>(
 
 createContestWizard.action(CANCEL_ACTION, async (ctx) => {
   await ctx.answerCbQuery();
-  await ctx.reply('Amal bekor qilindi!', mainMenuKeyboard);
+  const role = ctx.from ? (await getOrCreateUser(ctx.from)).role : 'user';
+  await ctx.reply('Amal bekor qilindi!', mainMenuKeyboard(role));
   return ctx.scene.leave();
 });
 
 // Registered on the scene itself (not the step array), so it interrupts any step.
 createContestWizard.command('start', async (ctx) => {
   await ctx.scene.leave();
-  await sendMainMenuOrLoginPrompt(ctx);
+  await sendStartMessage(ctx);
 });
 
 createContestWizard.action(NOOP_ACTION, async (ctx) => {

@@ -1,5 +1,6 @@
 import { Telegram } from 'telegraf';
 import { Contest, ContestDocument } from '../models/Contest.model';
+import { UserDocument } from '../models/User.model';
 import { ContestDraft } from '../types/session.types';
 import { contestPostKeyboard } from '../keyboards/inline/contestPost.inline';
 import { schedulePublish, scheduleCompletion } from './scheduler.service';
@@ -39,7 +40,8 @@ function draftToContestData(ownerTelegramId: number, draft: ContestDraft) {
 }
 
 export async function publishContest(telegram: Telegram, contest: ContestDocument): Promise<void> {
-  const keyboard = contestPostKeyboard(contest._id as unknown as string, contest.buttonText);
+  const me = await telegram.getMe();
+  const keyboard = contestPostKeyboard(me.username, String(contest._id), contest.buttonText);
   let messageId: number;
 
   if (contest.mediaType === 'photo' && contest.mediaFileId) {
@@ -90,6 +92,11 @@ export async function createContest(
   return contest;
 }
 
-export async function listUserContests(ownerTelegramId: number): Promise<ContestDocument[]> {
-  return Contest.find({ ownerTelegramId }).sort({ createdAt: -1 }).limit(50);
+/** Superadmin sees every admin's (non-removed) contests; everyone else sees only their own. */
+export async function listVisibleContests(user: UserDocument): Promise<ContestDocument[]> {
+  const filter: Record<string, unknown> = { removedAt: { $exists: false } };
+  if (user.role !== 'superadmin') {
+    filter.ownerTelegramId = user.telegramId;
+  }
+  return Contest.find(filter).sort({ createdAt: -1 }).limit(50);
 }
