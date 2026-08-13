@@ -62,6 +62,12 @@ export async function publishContest(telegram: Telegram, contest: ContestDocumen
       ...keyboard,
     });
     messageId = sent.message_id;
+  } else if (contest.mediaType === 'document' && contest.mediaFileId) {
+    const sent = await telegram.sendDocument(contest.publishChannelId, contest.mediaFileId, {
+      caption: contest.text,
+      ...keyboard,
+    });
+    messageId = sent.message_id;
   } else {
     const sent = await telegram.sendMessage(contest.publishChannelId, contest.text, keyboard);
     messageId = sent.message_id;

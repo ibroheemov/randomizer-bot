@@ -15,6 +15,7 @@ import { registerSupportHandler } from './handlers/support.handler';
 import { registerAdminManagementHandlers } from './handlers/adminManagement.handler';
 import { registerBroadcastHandlers } from './handlers/broadcast.handler';
 import { registerBotMembershipHandler } from './handlers/botMembership.handler';
+import { registerBotUsersHandler } from './handlers/botUsers.handler';
 
 export const bot = new Telegraf<BotContext>(env.BOT_TOKEN);
 
@@ -47,6 +48,7 @@ registerSupportHandler(bot);
 registerAdminManagementHandlers(bot);
 registerBroadcastHandlers(bot);
 registerBotMembershipHandler(bot);
+registerBotUsersHandler(bot);
 
 bot.catch((err, ctx) => {
   console.error(`[bot] error while handling update ${ctx.updateType}`, err);

@@ -7,6 +7,7 @@ export interface UserDocument extends Document {
   firstName?: string;
   lastName?: string;
   role: Role;
+  blockedAt?: Date;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -18,6 +19,7 @@ const userSchema = new Schema<UserDocument>(
     firstName: { type: String },
     lastName: { type: String },
     role: { type: String, enum: ['user', 'admin', 'superadmin'], default: 'user', index: true },
+    blockedAt: { type: Date },
   },
   { timestamps: true },
 );

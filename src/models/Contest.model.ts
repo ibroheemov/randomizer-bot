@@ -56,7 +56,7 @@ const contestSchema = new Schema<ContestDocument>(
   {
     ownerTelegramId: { type: Number, required: true, index: true },
     text: { type: String, required: true },
-    mediaType: { type: String, enum: ['photo', 'video', 'animation'] },
+    mediaType: { type: String, enum: ['photo', 'video', 'animation', 'document'] },
     mediaFileId: { type: String },
     buttonText: { type: String, required: true },
     requiredChannels: { type: [requiredChannelSchema], default: [] },
