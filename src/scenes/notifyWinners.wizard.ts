@@ -3,9 +3,10 @@ import { BotContext } from '../types/context.types';
 import { NotifyWinnersWizardState } from '../types/session.types';
 import { Contest } from '../models/Contest.model';
 import { CANCEL_ACTION, cancelInlineKeyboard } from '../keyboards/inline/cancel.inline';
-import { sendStartMessage } from '../handlers/start.handler';
+import { handleStartCommand } from '../handlers/start.handler';
+import { NOTIFY_WINNERS_WIZARD_ID } from './wizardIds';
 
-export const NOTIFY_WINNERS_WIZARD_ID = 'notifyWinnersWizard';
+export { NOTIFY_WINNERS_WIZARD_ID };
 
 function getState(ctx: BotContext): NotifyWinnersWizardState {
   return ctx.wizard.state as NotifyWinnersWizardState;
@@ -57,5 +58,5 @@ notifyWinnersWizard.action(CANCEL_ACTION, async (ctx) => {
 
 notifyWinnersWizard.command('start', async (ctx) => {
   await ctx.scene.leave();
-  await sendStartMessage(ctx);
+  await handleStartCommand(ctx);
 });

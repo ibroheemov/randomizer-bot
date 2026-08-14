@@ -2,9 +2,10 @@ import { Scenes } from 'telegraf';
 import { BotContext } from '../types/context.types';
 import { User } from '../models/User.model';
 import { CANCEL_ACTION, cancelInlineKeyboard } from '../keyboards/inline/cancel.inline';
-import { sendStartMessage } from '../handlers/start.handler';
+import { handleStartCommand } from '../handlers/start.handler';
+import { BROADCAST_WIZARD_ID } from './wizardIds';
 
-export const BROADCAST_WIZARD_ID = 'broadcastWizard';
+export { BROADCAST_WIZARD_ID };
 
 export const broadcastWizard = new Scenes.WizardScene<BotContext>(
   BROADCAST_WIZARD_ID,
@@ -45,5 +46,5 @@ broadcastWizard.action(CANCEL_ACTION, async (ctx) => {
 
 broadcastWizard.command('start', async (ctx) => {
   await ctx.scene.leave();
-  await sendStartMessage(ctx);
+  await handleStartCommand(ctx);
 });

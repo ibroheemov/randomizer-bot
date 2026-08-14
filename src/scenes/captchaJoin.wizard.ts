@@ -5,8 +5,10 @@ import { generateCaptcha } from '../services/captcha.service';
 import { joinContest, replyJoinResult } from '../services/participant.service';
 import { CANCEL_ACTION } from '../keyboards/inline/cancel.inline';
 import { sendStartMessage } from '../services/user.service';
+import { handleStartCommand } from '../handlers/start.handler';
+import { CAPTCHA_JOIN_WIZARD_ID } from './wizardIds';
 
-export const CAPTCHA_JOIN_WIZARD_ID = 'captchaJoinWizard';
+export { CAPTCHA_JOIN_WIZARD_ID };
 
 const REGENERATE_ACTION = 'captcha_regenerate';
 const MAX_ATTEMPTS = 3;
@@ -85,5 +87,5 @@ captchaJoinWizard.action(CANCEL_ACTION, async (ctx) => {
 
 captchaJoinWizard.command('start', async (ctx) => {
   await ctx.scene.leave();
-  await sendStartMessage(ctx);
+  await handleStartCommand(ctx);
 });

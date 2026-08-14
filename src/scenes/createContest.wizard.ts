@@ -45,10 +45,11 @@ import {
   parseTashkentDateTime,
 } from '../utils/datetime';
 import { buildReviewMessage } from '../utils/text';
-import { sendStartMessage } from '../handlers/start.handler';
+import { handleStartCommand } from '../handlers/start.handler';
 import { getOrCreateUser } from '../services/user.service';
+import { CREATE_CONTEST_WIZARD_ID } from './wizardIds';
 
-export const CREATE_CONTEST_WIZARD_ID = 'createContestWizard';
+export { CREATE_CONTEST_WIZARD_ID };
 
 const NOOP_ACTION = 'noop';
 
@@ -476,7 +477,7 @@ createContestWizard.action(CANCEL_ACTION, async (ctx) => {
 // Registered on the scene itself (not the step array), so it interrupts any step.
 createContestWizard.command('start', async (ctx) => {
   await ctx.scene.leave();
-  await sendStartMessage(ctx);
+  await handleStartCommand(ctx);
 });
 
 createContestWizard.action(NOOP_ACTION, async (ctx) => {

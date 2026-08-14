@@ -8,10 +8,11 @@ import {
   upsertChannel,
 } from '../services/channel.service';
 import { mainMenuKeyboard } from '../keyboards/mainMenu.keyboard';
-import { sendStartMessage } from '../handlers/start.handler';
+import { handleStartCommand } from '../handlers/start.handler';
 import { getOrCreateUser } from '../services/user.service';
+import { ADD_CHANNEL_WIZARD_ID } from './wizardIds';
 
-export const ADD_CHANNEL_WIZARD_ID = 'addChannelWizard';
+export { ADD_CHANNEL_WIZARD_ID };
 
 function getState(ctx: BotContext): AddChannelWizardState {
   return ctx.wizard.state as AddChannelWizardState;
@@ -84,5 +85,5 @@ export const addChannelWizard = new Scenes.WizardScene<BotContext>(
 
 addChannelWizard.command('start', async (ctx) => {
   await ctx.scene.leave();
-  await sendStartMessage(ctx);
+  await handleStartCommand(ctx);
 });
