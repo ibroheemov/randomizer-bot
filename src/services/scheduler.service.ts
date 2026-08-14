@@ -21,22 +21,30 @@ let telegramRef: Telegram | null = null;
 agenda.define(PUBLISH_JOB, async (job: Job<JobData>) => {
   if (!telegramRef) return;
   const { contestId } = job.attrs.data;
-  const contest = await Contest.findById(contestId);
-  if (!contest || contest.status !== 'scheduled') return;
+  try {
+    const contest = await Contest.findById(contestId);
+    if (!contest || contest.status !== 'scheduled') return;
 
-  await publishContest(telegramRef, contest);
+    await publishContest(telegramRef, contest);
 
-  if (contest.completionType === 'by_time' && contest.completeAt) {
-    await agenda.schedule(contest.completeAt, COMPLETE_JOB, { contestId });
+    if (contest.completionType === 'by_time' && contest.completeAt) {
+      await agenda.schedule(contest.completeAt, COMPLETE_JOB, { contestId });
+    }
+  } catch (err) {
+    console.error(`[scheduler] publish-contest job failed for contest ${contestId}`, err);
   }
 });
 
 agenda.define(COMPLETE_JOB, async (job: Job<JobData>) => {
   if (!telegramRef) return;
   const { contestId } = job.attrs.data;
-  const contest = await Contest.findById(contestId);
-  if (!contest || contest.status !== 'published') return;
-  await selectWinners(telegramRef, contest._id);
+  try {
+    const contest = await Contest.findById(contestId);
+    if (!contest || contest.status !== 'published') return;
+    await selectWinners(telegramRef, contest._id);
+  } catch (err) {
+    console.error(`[scheduler] complete-contest job failed for contest ${contestId}`, err);
+  }
 });
 
 export async function schedulePublish(contestId: string, publishAt: Date): Promise<void> {
@@ -63,13 +71,18 @@ async function reconcileMissedJobs(telegram: Telegram): Promise<void> {
 
   const overdueScheduled = await Contest.find({ status: 'scheduled', publishAt: { $lte: now } });
   for (const contest of overdueScheduled) {
-    await publishContest(telegram, contest);
-    if (contest.completionType === 'by_time' && contest.completeAt) {
-      if (contest.completeAt <= now) {
-        await selectWinners(telegram, contest._id);
-      } else {
-        await scheduleCompletion(String(contest._id), contest.completeAt);
+    try {
+      await publishContest(telegram, contest);
+      if (contest.completionType === 'by_time' && contest.completeAt) {
+        if (contest.completeAt <= now) {
+          await selectWinners(telegram, contest._id);
+        } else {
+          await scheduleCompletion(String(contest._id), contest.completeAt);
+        }
       }
+    } catch (err) {
+      // One contest failing to (re-)publish must never take the whole bot down on boot.
+      console.error(`[scheduler] failed to reconcile overdue contest ${contest._id}`, err);
     }
   }
 
@@ -79,6 +92,10 @@ async function reconcileMissedJobs(telegram: Telegram): Promise<void> {
     completeAt: { $lte: now },
   });
   for (const contest of overdueCompletions) {
-    await selectWinners(telegram, contest._id);
+    try {
+      await selectWinners(telegram, contest._id);
+    } catch (err) {
+      console.error(`[scheduler] failed to reconcile overdue completion ${contest._id}`, err);
+    }
   }
 }
