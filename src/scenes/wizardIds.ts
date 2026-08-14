@@ -6,3 +6,4 @@ export const ADD_CHANNEL_WIZARD_ID = 'addChannelWizard';
 export const NOTIFY_WINNERS_WIZARD_ID = 'notifyWinnersWizard';
 export const BROADCAST_WIZARD_ID = 'broadcastWizard';
 export const CAPTCHA_JOIN_WIZARD_ID = 'captchaJoinWizard';
+export const GLOBAL_CHANNEL_WIZARD_ID = 'globalChannelWizard';

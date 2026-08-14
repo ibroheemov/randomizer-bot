@@ -13,6 +13,7 @@ export const MAIN_MENU_BUTTONS = {
   BOT_USERS: 'Foydalanuvchilar 👥',
   ADMINS: 'Adminlar 👤',
   ADD_ADMIN: "Admin qo'shish ➕",
+  GLOBAL_CHANNELS: 'Majburiy kanallar ⚙️',
 } as const;
 
 export function mainMenuKeyboard(role: Role) {
@@ -24,6 +25,7 @@ export function mainMenuKeyboard(role: Role) {
   if (role === 'superadmin') {
     rows.push([MAIN_MENU_BUTTONS.NOTIFY_USERS, MAIN_MENU_BUTTONS.BOT_USERS]);
     rows.push([MAIN_MENU_BUTTONS.ADMINS, MAIN_MENU_BUTTONS.ADD_ADMIN]);
+    rows.push([MAIN_MENU_BUTTONS.GLOBAL_CHANNELS]);
   }
 
   return Markup.keyboard(rows).resize().persistent();
