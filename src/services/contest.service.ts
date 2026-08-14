@@ -101,7 +101,15 @@ export async function createContest(
   const contest = await Contest.create({ ...data, status: 'scheduled' });
 
   if (draft.publishType === 'now') {
-    await publishContest(telegram, contest);
+    try {
+      await publishContest(telegram, contest);
+    } catch (err) {
+      // Don't leave a permanently-stuck 'scheduled' record behind — reconciliation would
+      // otherwise keep retrying (and failing) this exact contest on every future boot.
+      contest.status = 'cancelled';
+      await contest.save();
+      throw err;
+    }
     if (contest.completionType === 'by_time' && contest.completeAt) {
       await scheduleCompletion(String(contest._id), contest.completeAt);
     }

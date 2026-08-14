@@ -447,7 +447,17 @@ export const createContestWizard = new Scenes.WizardScene<BotContext>(
 
     if (data === SAVE_CONTEST_ACTION) {
       await ctx.answerCbQuery();
-      await createContest(ctx.from.id, state.contest, ctx.telegram);
+
+      try {
+        await createContest(ctx.from.id, state.contest, ctx.telegram);
+      } catch (err) {
+        console.error('[createContest.wizard] failed to save/publish contest', err);
+        await ctx.reply(
+          "❌ Konkursni saqlashda xatolik yuz berdi. Botning tanlangan kanalda hali ham administrator ekanligini tekshirib, qaytadan urinib ko'ring.",
+        );
+        return;
+      }
+
       await ctx.reply(
         "✅ Konkurs saqlandi va e'lon qilishga tayyorlanmoqda.\n\nMenyuni ochish uchun /start deb yozing",
       );
