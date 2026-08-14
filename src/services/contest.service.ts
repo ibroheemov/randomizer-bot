@@ -4,6 +4,7 @@ import { UserDocument } from '../models/User.model';
 import { ContestDraft } from '../types/session.types';
 import { contestPostKeyboard } from '../keyboards/inline/contestPost.inline';
 import { schedulePublish, scheduleCompletion } from './scheduler.service';
+import { getBotUsername } from './botInfo.service';
 
 function draftToContestData(ownerTelegramId: number, draft: ContestDraft) {
   if (
@@ -21,6 +22,7 @@ function draftToContestData(ownerTelegramId: number, draft: ContestDraft) {
   return {
     ownerTelegramId,
     text: draft.text,
+    textEntities: draft.textEntities,
     mediaType: draft.mediaType,
     mediaFileId: draft.mediaFileId,
     buttonText: draft.buttonText,
@@ -40,36 +42,48 @@ function draftToContestData(ownerTelegramId: number, draft: ContestDraft) {
 }
 
 export async function publishContest(telegram: Telegram, contest: ContestDocument): Promise<void> {
-  const me = await telegram.getMe();
-  const keyboard = contestPostKeyboard(me.username, String(contest._id), contest.buttonText);
+  const botUsername = await getBotUsername(telegram);
+  const keyboard = contestPostKeyboard(
+    botUsername,
+    String(contest._id),
+    contest.buttonText,
+    contest.participantsCount,
+  );
   let messageId: number;
 
   if (contest.mediaType === 'photo' && contest.mediaFileId) {
     const sent = await telegram.sendPhoto(contest.publishChannelId, contest.mediaFileId, {
       caption: contest.text,
+      caption_entities: contest.textEntities,
       ...keyboard,
     });
     messageId = sent.message_id;
   } else if (contest.mediaType === 'video' && contest.mediaFileId) {
     const sent = await telegram.sendVideo(contest.publishChannelId, contest.mediaFileId, {
       caption: contest.text,
+      caption_entities: contest.textEntities,
       ...keyboard,
     });
     messageId = sent.message_id;
   } else if (contest.mediaType === 'animation' && contest.mediaFileId) {
     const sent = await telegram.sendAnimation(contest.publishChannelId, contest.mediaFileId, {
       caption: contest.text,
+      caption_entities: contest.textEntities,
       ...keyboard,
     });
     messageId = sent.message_id;
   } else if (contest.mediaType === 'document' && contest.mediaFileId) {
     const sent = await telegram.sendDocument(contest.publishChannelId, contest.mediaFileId, {
       caption: contest.text,
+      caption_entities: contest.textEntities,
       ...keyboard,
     });
     messageId = sent.message_id;
   } else {
-    const sent = await telegram.sendMessage(contest.publishChannelId, contest.text, keyboard);
+    const sent = await telegram.sendMessage(contest.publishChannelId, contest.text, {
+      entities: contest.textEntities,
+      ...keyboard,
+    });
     messageId = sent.message_id;
   }
 

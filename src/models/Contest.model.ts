@@ -4,6 +4,7 @@ import {
   ContestStatus,
   ContestWinner,
   MediaType,
+  MessageEntity,
   PublishType,
   RequiredChannel,
 } from '../types/contest.types';
@@ -11,6 +12,7 @@ import {
 export interface ContestDocument extends Document {
   ownerTelegramId: number;
   text: string;
+  textEntities?: MessageEntity[];
   mediaType?: MediaType;
   mediaFileId?: string;
   buttonText: string;
@@ -56,6 +58,9 @@ const contestSchema = new Schema<ContestDocument>(
   {
     ownerTelegramId: { type: Number, required: true, index: true },
     text: { type: String, required: true },
+    // Pass-through Telegram MessageEntity[] (bold/italic/spoiler/custom-emoji/etc.) — stored
+    // opaquely and replayed verbatim, never queried into, so Mixed avoids modeling its union shape.
+    textEntities: { type: [Schema.Types.Mixed] },
     mediaType: { type: String, enum: ['photo', 'video', 'animation', 'document'] },
     mediaFileId: { type: String },
     buttonText: { type: String, required: true },

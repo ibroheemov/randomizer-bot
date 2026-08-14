@@ -2,7 +2,8 @@ import { User, UserDocument } from '../models/User.model';
 import { env } from '../config/env';
 import { Role } from '../types/role.types';
 import { BotContext } from '../types/context.types';
-import { ACCESS_DENIED_MESSAGE } from '../config/constants';
+import { ACCESS_DENIED_MESSAGE, USER_WELCOME_MESSAGE } from '../config/constants';
+import { MAIN_MENU_GREETING, mainMenuKeyboard } from '../keyboards/mainMenu.keyboard';
 
 const ROLE_RANK: Record<Role, number> = { user: 0, admin: 1, superadmin: 2 };
 
@@ -43,6 +44,17 @@ export async function getOrCreateUser(from: TelegramFrom): Promise<UserDocument>
 }
 
 /** Fetches/creates the user, checks their role, and replies with a denial if they fall short. */
+export async function sendStartMessage(ctx: BotContext): Promise<void> {
+  if (!ctx.from) return;
+
+  const user = await getOrCreateUser(ctx.from);
+  if (roleAtLeast(user.role, 'admin')) {
+    await ctx.reply(MAIN_MENU_GREETING, mainMenuKeyboard(user.role));
+  } else {
+    await ctx.reply(USER_WELCOME_MESSAGE);
+  }
+}
+
 export async function requireRole(ctx: BotContext, min: Role): Promise<UserDocument | null> {
   if (!ctx.from) return null;
 
