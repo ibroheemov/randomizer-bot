@@ -5,14 +5,14 @@ export const MAIN_MENU_GREETING =
   "Salom! 😉\nKanalingizda yoki chatingizda konkurs o'tkazmoqchimisiz? Men sizga bunda osongina yordam bera olaman 👌";
 
 export const MAIN_MENU_BUTTONS = {
-  CREATE_CONTEST: 'Konkurs yaratish',
-  MY_CONTESTS: 'Konkurslarim',
-  MY_CHANNELS: 'Kanallarim',
-  SUPPORT: 'Yordam',
-  NOTIFY_USERS: "📢 Foydalanuvchilarga xabar yuborish",
-  BOT_USERS: '👥 Bot foydalanuvchilari',
-  ADMINS: '👤 Adminlar',
-  ADD_ADMIN: "➕ Admin qo'shish",
+  CREATE_CONTEST: 'Konkurs yaratish 🎲',
+  MY_CONTESTS: 'Konkurslarim 🗃',
+  MY_CHANNELS: 'Kanallarim 📂',
+  SUPPORT: 'Yordam 💬',
+  NOTIFY_USERS: 'Xabar Yuborish 📢',
+  BOT_USERS: 'Foydalanuvchilar 👥',
+  ADMINS: 'Adminlar 👤',
+  ADD_ADMIN: "Admin qo'shish ➕",
 } as const;
 
 export function mainMenuKeyboard(role: Role) {
