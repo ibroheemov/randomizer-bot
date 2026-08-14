@@ -36,6 +36,15 @@ export interface CaptchaJoinWizardState {
   contestId: string;
   expectedAnswer: string;
   attemptsLeft: number;
+  /**
+   * One-shot flag set only by the ctx.scene.enter() call that starts this wizard. Telegraf
+   * re-runs the scene's own middleware (including its `.command('start', ...)` escape hatch)
+   * synchronously against the *same* in-flight "/start join_<id>" ctx that triggered entry, so
+   * without this the escape hatch would immediately match that same message and recurse back
+   * into handleStartCommand -> scene.enter() forever, and step 0 (which sends the captcha)
+   * would never run. Consumed and cleared on first read.
+   */
+  justEntered?: boolean;
 }
 
 export function createEmptyContestDraft(): ContestDraft {
