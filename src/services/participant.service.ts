@@ -116,7 +116,7 @@ export async function replyJoinResult(ctx: BotContext, result: JoinResult): Prom
   if (result.reason === 'not_subscribed') {
     const list = result.missing.map((c) => (c.username ? `@${c.username}` : c.title)).join(', ');
     await ctx.reply(
-      `Iltimos, quyidagilarga obuna bo'ling: ${list}\n\nObuna bo'lgach, "Tekshirdim" tugmasini bosing.`,
+      `Iltimos, quyidagilarga obuna bo'ling: ${list}\n\nObuna bo'lgach, "Obuna bo'ldim" tugmasini bosing.`,
       joinRecheckKeyboard(result.contestId),
     );
     return;
