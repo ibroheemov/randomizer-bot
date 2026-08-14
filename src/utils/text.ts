@@ -16,5 +16,5 @@ export function buildReviewMessage(contest: ContestDraft): string {
 }
 
 export function toggleLabel(label: string, active: boolean): string {
-  return active ? `✅ ${label}` : label;
+  return active ? `✅ ${label}` : `❌ ${label}`;
 }

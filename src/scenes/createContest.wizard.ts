@@ -1,7 +1,7 @@
 import { Scenes } from 'telegraf';
 import { BotContext } from '../types/context.types';
 import { ContestWizardState, createEmptyContestDraft } from '../types/session.types';
-import { MediaType } from '../types/contest.types';
+import { MediaType, MessageEntity } from '../types/contest.types';
 import { BUTTON_TEXT_PRESETS } from '../config/constants';
 import { mainMenuKeyboard } from '../keyboards/mainMenu.keyboard';
 import { CANCEL_ACTION, cancelInlineKeyboard } from '../keyboards/inline/cancel.inline';
@@ -24,12 +24,13 @@ import {
   COMPLETE_BY_TIME_ACTION,
   completionTypeKeyboard,
 } from '../keyboards/inline/completionType.inline';
+import { OPEN_CAPTCHA_INFO_ACTION, SAVE_CONTEST_ACTION, reviewActionsKeyboard } from '../keyboards/inline/reviewActions.inline';
 import {
-  SAVE_CONTEST_ACTION,
-  TOGGLE_BOOST_ACTION,
+  CAPTCHA_INFO_BACK_ACTION,
+  CAPTCHA_INFO_TEXT,
   TOGGLE_CAPTCHA_ACTION,
-  reviewActionsKeyboard,
-} from '../keyboards/inline/reviewActions.inline';
+  captchaInfoKeyboard,
+} from '../keyboards/inline/captchaInfo.inline';
 import {
   resolveChatFromInput,
   listUserChannels,
@@ -59,21 +60,41 @@ type IncomingMessage = NonNullable<BotContext['message']>;
 
 function extractMedia(
   message: IncomingMessage,
-): { mediaType?: MediaType; mediaFileId?: string; text?: string } {
+): { mediaType?: MediaType; mediaFileId?: string; text?: string; textEntities?: MessageEntity[] } {
   if ('photo' in message && message.photo?.length) {
-    return { mediaType: 'photo', mediaFileId: message.photo[message.photo.length - 1].file_id, text: message.caption };
+    return {
+      mediaType: 'photo',
+      mediaFileId: message.photo[message.photo.length - 1].file_id,
+      text: message.caption,
+      textEntities: message.caption_entities,
+    };
   }
   if ('video' in message && message.video) {
-    return { mediaType: 'video', mediaFileId: message.video.file_id, text: message.caption };
+    return {
+      mediaType: 'video',
+      mediaFileId: message.video.file_id,
+      text: message.caption,
+      textEntities: message.caption_entities,
+    };
   }
   if ('animation' in message && message.animation) {
-    return { mediaType: 'animation', mediaFileId: message.animation.file_id, text: message.caption };
+    return {
+      mediaType: 'animation',
+      mediaFileId: message.animation.file_id,
+      text: message.caption,
+      textEntities: message.caption_entities,
+    };
   }
   if ('document' in message && message.document) {
-    return { mediaType: 'document', mediaFileId: message.document.file_id, text: message.caption };
+    return {
+      mediaType: 'document',
+      mediaFileId: message.document.file_id,
+      text: message.caption,
+      textEntities: message.caption_entities,
+    };
   }
   if ('text' in message) {
-    return { text: message.text };
+    return { text: message.text, textEntities: message.entities };
   }
   return {};
 }
@@ -105,23 +126,25 @@ async function promptDatetime(ctx: BotContext, kind: 'publish' | 'complete'): Pr
 
 async function sendReviewScreen(ctx: BotContext): Promise<void> {
   const { contest } = getState(ctx);
-  const previewExtra = {
-    reply_markup: { inline_keyboard: [[{ text: contest.buttonText as string, callback_data: NOOP_ACTION }]] },
+  const buttonRow = { inline_keyboard: [[{ text: contest.buttonText as string, callback_data: NOOP_ACTION }]] };
+  const captionExtra = {
+    reply_markup: buttonRow,
+    caption_entities: contest.textEntities,
   };
 
   if (contest.mediaType === 'photo' && contest.mediaFileId) {
-    await ctx.replyWithPhoto(contest.mediaFileId, { caption: contest.text, ...previewExtra });
+    await ctx.replyWithPhoto(contest.mediaFileId, { caption: contest.text, ...captionExtra });
   } else if (contest.mediaType === 'video' && contest.mediaFileId) {
-    await ctx.replyWithVideo(contest.mediaFileId, { caption: contest.text, ...previewExtra });
+    await ctx.replyWithVideo(contest.mediaFileId, { caption: contest.text, ...captionExtra });
   } else if (contest.mediaType === 'animation' && contest.mediaFileId) {
-    await ctx.replyWithAnimation(contest.mediaFileId, { caption: contest.text, ...previewExtra });
+    await ctx.replyWithAnimation(contest.mediaFileId, { caption: contest.text, ...captionExtra });
   } else if (contest.mediaType === 'document' && contest.mediaFileId) {
-    await ctx.replyWithDocument(contest.mediaFileId, { caption: contest.text, ...previewExtra });
+    await ctx.replyWithDocument(contest.mediaFileId, { caption: contest.text, ...captionExtra });
   } else {
-    await ctx.reply(contest.text as string, previewExtra);
+    await ctx.reply(contest.text as string, { reply_markup: buttonRow, entities: contest.textEntities });
   }
 
-  await ctx.reply(buildReviewMessage(contest), reviewActionsKeyboard(contest.useCaptcha, contest.boostForLuck));
+  await ctx.reply(buildReviewMessage(contest), reviewActionsKeyboard(contest.useCaptcha));
 }
 
 export const createContestWizard = new Scenes.WizardScene<BotContext>(
@@ -148,7 +171,7 @@ export const createContestWizard = new Scenes.WizardScene<BotContext>(
       return;
     }
 
-    const { mediaType, mediaFileId, text } = extractMedia(ctx.message);
+    const { mediaType, mediaFileId, text, textEntities } = extractMedia(ctx.message);
     if (!text) {
       await ctx.reply(
         "Iltimos, matn yuboring (xohlasangiz bitta rasm/video/GIF yoki .apk fayl biriktirishingiz mumkin).",
@@ -159,6 +182,7 @@ export const createContestWizard = new Scenes.WizardScene<BotContext>(
 
     const state = getState(ctx);
     state.contest.text = text;
+    state.contest.textEntities = textEntities;
     state.contest.mediaType = mediaType;
     state.contest.mediaFileId = mediaFileId;
 
@@ -393,19 +417,30 @@ export const createContestWizard = new Scenes.WizardScene<BotContext>(
     await sendReviewScreen(ctx);
     return ctx.wizard.selectStep(11);
   },
-  // Step 11 — review: toggle flags or save.
+  // Step 11 — review: drill into captcha info, toggle it there, or save.
   async (ctx) => {
     if (!ctx.callbackQuery || !('data' in ctx.callbackQuery) || !ctx.from) return;
     const data = ctx.callbackQuery.data;
     const state = getState(ctx);
 
-    if (data === TOGGLE_CAPTCHA_ACTION || data === TOGGLE_BOOST_ACTION) {
-      if (data === TOGGLE_CAPTCHA_ACTION) state.contest.useCaptcha = !state.contest.useCaptcha;
-      else state.contest.boostForLuck = !state.contest.boostForLuck;
-
+    if (data === OPEN_CAPTCHA_INFO_ACTION) {
       await ctx.answerCbQuery();
-      await ctx.editMessageReplyMarkup(
-        reviewActionsKeyboard(state.contest.useCaptcha, state.contest.boostForLuck).reply_markup,
+      await ctx.editMessageText(CAPTCHA_INFO_TEXT, captchaInfoKeyboard(state.contest.useCaptcha));
+      return;
+    }
+
+    if (data === TOGGLE_CAPTCHA_ACTION) {
+      state.contest.useCaptcha = !state.contest.useCaptcha;
+      await ctx.answerCbQuery();
+      await ctx.editMessageReplyMarkup(captchaInfoKeyboard(state.contest.useCaptcha).reply_markup);
+      return;
+    }
+
+    if (data === CAPTCHA_INFO_BACK_ACTION) {
+      await ctx.answerCbQuery();
+      await ctx.editMessageText(
+        buildReviewMessage(state.contest),
+        reviewActionsKeyboard(state.contest.useCaptcha),
       );
       return;
     }

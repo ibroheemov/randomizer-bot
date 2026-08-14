@@ -7,6 +7,7 @@ import { createContestWizard } from './scenes/createContest.wizard';
 import { addChannelWizard } from './scenes/addChannel.wizard';
 import { notifyWinnersWizard } from './scenes/notifyWinners.wizard';
 import { broadcastWizard } from './scenes/broadcast.wizard';
+import { captchaJoinWizard } from './scenes/captchaJoin.wizard';
 import { registerStartHandler } from './handlers/start.handler';
 import { registerMainMenuHandlers } from './handlers/mainMenu.handler';
 import { registerMyChannelsHandlers } from './handlers/myChannels.handler';
@@ -24,6 +25,7 @@ const stage = new Scenes.Stage<BotContext>([
   addChannelWizard,
   notifyWinnersWizard,
   broadcastWizard,
+  captchaJoinWizard,
 ]);
 
 bot.use(sessionMiddleware);

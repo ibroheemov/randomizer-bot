@@ -1,7 +1,8 @@
-import { CompletionType, MediaType, PublishType, RequiredChannel } from './contest.types';
+import { CompletionType, MediaType, MessageEntity, PublishType, RequiredChannel } from './contest.types';
 
 export interface ContestDraft {
   text?: string;
+  textEntities?: MessageEntity[];
   mediaType?: MediaType;
   mediaFileId?: string;
   buttonText?: string;
@@ -29,6 +30,12 @@ export interface AddChannelWizardState {
 
 export interface NotifyWinnersWizardState {
   contestId: string;
+}
+
+export interface CaptchaJoinWizardState {
+  contestId: string;
+  expectedAnswer: string;
+  attemptsLeft: number;
 }
 
 export function createEmptyContestDraft(): ContestDraft {

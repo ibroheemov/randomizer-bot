@@ -2,8 +2,11 @@ import { Telegram } from 'telegraf';
 import { Contest } from '../models/Contest.model';
 import { Participant } from '../models/Participant.model';
 import { RequiredChannel } from '../types/contest.types';
+import { BotContext } from '../types/context.types';
 import { checkRequiredSubscriptions } from './subscription.service';
 import { selectWinners } from './winner.service';
+import { getBotUsername } from './botInfo.service';
+import { contestPostKeyboard } from '../keyboards/inline/contestPost.inline';
 
 export type JoinResult =
   | { ok: true; alreadyJoined: boolean }
@@ -56,6 +59,26 @@ export async function joinContest(
     { new: true },
   );
 
+  if (updated?.messageId) {
+    try {
+      const botUsername = await getBotUsername(telegram);
+      const keyboard = contestPostKeyboard(
+        botUsername,
+        String(updated._id),
+        updated.buttonText,
+        updated.participantsCount,
+      );
+      await telegram.editMessageReplyMarkup(
+        updated.publishChannelId,
+        updated.messageId,
+        undefined,
+        keyboard.reply_markup,
+      );
+    } catch (err) {
+      console.error('[participant.service] failed to refresh participant count on post', err);
+    }
+  }
+
   if (
     updated &&
     updated.completionType === 'by_participants' &&
@@ -66,4 +89,24 @@ export async function joinContest(
   }
 
   return { ok: true, alreadyJoined: false };
+}
+
+/** Renders a JoinResult as the appropriate chat reply — shared by the direct-join and captcha paths. */
+export async function replyJoinResult(ctx: BotContext, result: JoinResult): Promise<void> {
+  if (result.ok) {
+    await ctx.reply(
+      result.alreadyJoined
+        ? 'Siz allaqachon ushbu konkursda ishtirok etyapsiz!'
+        : "🎉 Endi siz konkurs ishtirokchisisiz! \n❗️Iltimos konkurs yakunlanguncha botni tark etmang",
+    );
+    return;
+  }
+
+  if (result.reason === 'not_subscribed') {
+    const list = result.missing.map((c) => (c.username ? `@${c.username}` : c.title)).join(', ');
+    await ctx.reply(`Iltimos, quyidagilarga obuna bo'ling: ${list}`);
+    return;
+  }
+
+  await ctx.reply('Bu konkurs endi faol emas.');
 }
