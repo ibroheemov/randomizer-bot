@@ -43,26 +43,36 @@ export async function getOrCreateUser(from: TelegramFrom): Promise<UserDocument>
   });
 }
 
-/** Fetches/creates the user, checks their role, and replies with a denial if they fall short. */
 export async function sendStartMessage(ctx: BotContext): Promise<void> {
   if (!ctx.from) return;
 
-  const user = await getOrCreateUser(ctx.from);
-  if (roleAtLeast(user.role, 'admin')) {
-    await ctx.reply(MAIN_MENU_GREETING, mainMenuKeyboard(user.role));
-  } else {
-    await ctx.reply(USER_WELCOME_MESSAGE);
+  try {
+    const user = await getOrCreateUser(ctx.from);
+    if (roleAtLeast(user.role, 'admin')) {
+      await ctx.reply(MAIN_MENU_GREETING, mainMenuKeyboard(user.role));
+    } else {
+      await ctx.reply(USER_WELCOME_MESSAGE);
+    }
+  } catch (err) {
+    console.error('[user.service] sendStartMessage failed', err);
+    await ctx.reply("❌ Nimadir xato ketdi. Iltimos, birozdan so'ng qaytadan urinib ko'ring.");
   }
 }
 
+/** Fetches/creates the user, checks their role, and replies with a denial if they fall short. */
 export async function requireRole(ctx: BotContext, min: Role): Promise<UserDocument | null> {
   if (!ctx.from) return null;
 
-  const user = await getOrCreateUser(ctx.from);
-  if (!roleAtLeast(user.role, min)) {
-    await ctx.reply(ACCESS_DENIED_MESSAGE);
+  try {
+    const user = await getOrCreateUser(ctx.from);
+    if (!roleAtLeast(user.role, min)) {
+      await ctx.reply(ACCESS_DENIED_MESSAGE);
+      return null;
+    }
+    return user;
+  } catch (err) {
+    console.error('[user.service] requireRole failed', err);
+    await ctx.reply("❌ Nimadir xato ketdi. Iltimos, birozdan so'ng qaytadan urinib ko'ring.");
     return null;
   }
-
-  return user;
 }
