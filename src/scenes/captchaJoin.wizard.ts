@@ -119,7 +119,17 @@ captchaJoinWizard.action(CANCEL_ACTION, async (ctx) => {
   return ctx.scene.leave();
 });
 
-captchaJoinWizard.command('start', async (ctx) => {
+captchaJoinWizard.command('start', async (ctx, next) => {
+  const state = getState(ctx);
+  // handleContestJoinDeepLink() enters this scene mid-dispatch of the very "/start join_<id>"
+  // message that's still current — Telegraf re-runs this scene's middleware (this handler
+  // included) against that same ctx before wizard step 0 gets a turn. Let that one pass fall
+  // through to step 0 instead of treating it as a genuine new /start; any later "/start" while
+  // this wizard is active is a real escape and should still leave + redispatch.
+  if (state.justEntered) {
+    delete state.justEntered;
+    return next();
+  }
   await ctx.scene.leave();
   await handleStartCommand(ctx);
 });

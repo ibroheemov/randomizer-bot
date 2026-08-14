@@ -19,7 +19,7 @@ async function handleContestJoinDeepLink(ctx: BotContext, contestId: string): Pr
   }
 
   if (contest.useCaptcha) {
-    await ctx.scene.enter(CAPTCHA_JOIN_WIZARD_ID, { contestId });
+    await ctx.scene.enter(CAPTCHA_JOIN_WIZARD_ID, { contestId, justEntered: true });
     return;
   }
 
