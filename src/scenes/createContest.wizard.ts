@@ -155,7 +155,7 @@ export const createContestWizard = new Scenes.WizardScene<BotContext>(
     const state = getState(ctx);
     state.contest = createEmptyContestDraft();
     await ctx.reply(
-      "Konkurs yaratish\n\n✉️ Konkurs matningizni yuboring. Matn bilan birga rasm, video, GIF yoki .apk fayl ham yuborishingiz mumkin, formatlashdan foydalanib.\n❗️ Faqat bitta media fayldan foydalanishingiz mumkin.\n\nKonkurs boti butunlay bepul va shaffof ishlaydi. Konkurs postingizga bot havolasini qo'shsangiz, xursand bo'lamiz. Rahmat. @BestRandom_bot",
+      "Konkurs yaratish\n\n✉️ Konkurs matningizni yuboring. Matn bilan birga rasm, video, GIF yoki .apk fayl ham yuborishingiz mumkin, formatlashdan foydalanib.\n❗️ Faqat bitta media fayldan foydalanishingiz mumkin.\n\nKonkurs boti butunlay bepul va shaffof ishlaydi. Konkurs postingizga bot havolasini qo'shsangiz, xursand bo'lamiz. Rahmat. @RandomXpro_bot",
       cancelInlineKeyboard,
     );
     return ctx.wizard.next();
@@ -218,7 +218,7 @@ export const createContestWizard = new Scenes.WizardScene<BotContext>(
     state.contest.buttonText = buttonText;
     await ctx.reply('✅ Tugma matni saqlandi');
     await ctx.reply(
-      "📊 Konkursda ishtirok etish uchun foydalanuvchilar obuna bo'lishi kerak bo'lgan kanallarni qo'shing.\nKonkurs joylashtirilgan kanalga obuna bo'lish shart va bu sozlama sukut bo'yicha yoqilgan.\n\nKanal qo'shish uchun:\n1. Botni (@BestRandom_bot) kanalingizga administrator sifatida qo'shing (bu foydalanuvchining kanalga obuna bo'lgan-bo'lmaganini tekshirish uchun zarur).\n2. Kanalni botga @kanalnomi formatida yuboring (yoki kanaldagi xabarni forward qiling).\n\n⚠️ Agar foydalanuvchilarga kanalga obuna bo'lmasdan ham konkursda ishtirok etishga ruxsat bermoqchi bo'lsangiz, quyidagi tugmani bosing:",
+      "📊 Konkursda ishtirok etish uchun foydalanuvchilar obuna bo'lishi kerak bo'lgan kanallarni qo'shing.\nKonkurs joylashtirilgan kanalga obuna bo'lish shart va bu sozlama sukut bo'yicha yoqilgan.\n\nKanal qo'shish uchun:\n1. Botni (@RandomXpro_bot) kanalingizga administrator sifatida qo'shing (bu foydalanuvchining kanalga obuna bo'lgan-bo'lmaganini tekshirish uchun zarur).\n2. Kanalni botga @kanalnomi formatida yuboring (yoki kanaldagi xabarni forward qiling).\n\n⚠️ Agar foydalanuvchilarga kanalga obuna bo'lmasdan ham konkursda ishtirok etishga ruxsat bermoqchi bo'lsangiz, quyidagi tugmani bosing:",
       requiredChannelsPromptKeyboard,
     );
     return ctx.wizard.next();
@@ -263,7 +263,7 @@ export const createContestWizard = new Scenes.WizardScene<BotContext>(
       const botIsAdmin = await isBotAdmin(ctx.telegram, resolved.chatId);
       if (!botIsAdmin) {
         await ctx.reply(
-          `⚠️ Men "${resolved.title}" kanalida administrator emasman. Iltimos, avval @BestRandom_bot ni u yerga administrator qilib qo'shing, so'ng qaytadan yuboring.`,
+          `⚠️ Men "${resolved.title}" kanalida administrator emasman. Iltimos, avval @RandomXpro_bot ni u yerga administrator qilib qo'shing, so'ng qaytadan yuboring.`,
           requiredChannelsKeyboardFor(currentCount),
         );
         return;

@@ -13,7 +13,7 @@ import { Channel } from '../models/Channel.model';
 import { requireRole } from '../services/user.service';
 
 const ADD_CHANNEL_INSTRUCTIONS =
-  "Yo'riqnoma\n\nBotni (@BestRandom_bot) kanalingiz yoki chatingizga xabar joylash huquqiga ega administrator sifatida qo'shing. Keyin menga kanalni @kanalnomi formatida yuboring. Agar shaxsiy (yopiq) kanal qo'shmoqchi bo'lsangiz, undan xabarni forward qiling yoki shu kanaldagi istalgan xabar havolasini nusxalab yuboring.\n\n⚠️ Botdan guruhda (chatda) foydalanmoqchi bo'lsangiz, unga xabar joylash huquqini berganingizga ishonch hosil qiling.\n\n/start - bosh menyu uchun";
+  "Yo'riqnoma\n\nBotni (@RandomXpro_bot) kanalingiz yoki chatingizga xabar joylash huquqiga ega administrator sifatida qo'shing. Keyin menga kanalni @kanalnomi formatida yuboring. Agar shaxsiy (yopiq) kanal qo'shmoqchi bo'lsangiz, undan xabarni forward qiling yoki shu kanaldagi istalgan xabar havolasini nusxalab yuboring.\n\n⚠️ Botdan guruhda (chatda) foydalanmoqchi bo'lsangiz, unga xabar joylash huquqini berganingizga ishonch hosil qiling.\n\n/start - bosh menyu uchun";
 
 export function registerMyChannelsHandlers(bot: Telegraf<BotContext>): void {
   bot.hears(MAIN_MENU_BUTTONS.MY_CHANNELS, async (ctx) => {
