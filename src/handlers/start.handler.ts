@@ -78,17 +78,29 @@ function extractStartPayload(ctx: BotContext): string | undefined {
  * payload from someone tapping a deep link while still stuck in that scene.
  */
 export async function handleStartCommand(ctx: BotContext): Promise<void> {
-  const payload = extractStartPayload(ctx);
-  if (payload?.startsWith(JOIN_PAYLOAD_PREFIX)) {
-    await handleContestJoinDeepLink(ctx, payload.slice(JOIN_PAYLOAD_PREFIX.length));
-    return;
-  }
-  if (payload?.startsWith(ADMIN_INVITE_PAYLOAD_PREFIX)) {
-    await handleAdminInviteDeepLink(ctx, payload.slice(ADMIN_INVITE_PAYLOAD_PREFIX.length));
-    return;
-  }
+  try {
+    const payload = extractStartPayload(ctx);
+    if (payload?.startsWith(JOIN_PAYLOAD_PREFIX)) {
+      await handleContestJoinDeepLink(ctx, payload.slice(JOIN_PAYLOAD_PREFIX.length));
+      return;
+    }
+    if (payload?.startsWith(ADMIN_INVITE_PAYLOAD_PREFIX)) {
+      await handleAdminInviteDeepLink(ctx, payload.slice(ADMIN_INVITE_PAYLOAD_PREFIX.length));
+      return;
+    }
 
-  await sendStartMessage(ctx);
+    await sendStartMessage(ctx);
+  } catch (err) {
+    // This is the bot's single most user-facing entry point — never let it fail in total
+    // silence. Telegraf's global bot.catch() only logs server-side, so without this the
+    // user would see nothing happen at all.
+    console.error('[start.handler] unhandled error while dispatching /start', err);
+    try {
+      await ctx.reply("❌ Nimadir xato ketdi. Iltimos, birozdan so'ng qaytadan urinib ko'ring.");
+    } catch {
+      // Nothing more we can do if even the error reply fails to send.
+    }
+  }
 }
 
 export function registerStartHandler(bot: Telegraf<BotContext>): void {

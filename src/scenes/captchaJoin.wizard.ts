@@ -24,12 +24,33 @@ function captchaKeyboard() {
   ]);
 }
 
-async function sendCaptchaChallenge(ctx: BotContext, promptText: string): Promise<void> {
+/** Returns false if the image couldn't be generated/sent — never throws. */
+async function sendCaptchaChallenge(ctx: BotContext, promptText: string): Promise<boolean> {
   const state = getState(ctx);
-  const { imageBuffer, answer } = await generateCaptcha();
-  state.expectedAnswer = answer;
+  try {
+    const { imageBuffer, answer } = await generateCaptcha();
+    state.expectedAnswer = answer;
+    await ctx.replyWithPhoto({ source: imageBuffer }, { caption: promptText, ...captchaKeyboard() });
+    return true;
+  } catch (err) {
+    console.error('[captchaJoin.wizard] failed to generate/send captcha image', err);
+    return false;
+  }
+}
 
-  await ctx.replyWithPhoto({ source: imageBuffer }, { caption: promptText, ...captchaKeyboard() });
+/**
+ * A broken image pipeline must never be able to block participation entirely — if we can't
+ * even render a challenge, join the person directly instead of leaving them stuck in silence.
+ */
+async function joinWithoutCaptcha(ctx: BotContext): Promise<void> {
+  const state = getState(ctx);
+  await ctx.reply("⚠️ Captcha rasmini yaratib bo'lmadi. Sizni captchasiz ishtirokchi sifatida qo'shyapmiz.");
+  if (!ctx.from) return;
+  const result = await joinContest(ctx.telegram, state.contestId, {
+    telegramId: ctx.from.id,
+    username: ctx.from.username,
+  });
+  await replyJoinResult(ctx, result);
 }
 
 export const captchaJoinWizard = new Scenes.WizardScene<BotContext>(
@@ -38,7 +59,12 @@ export const captchaJoinWizard = new Scenes.WizardScene<BotContext>(
   async (ctx) => {
     const state = getState(ctx);
     state.attemptsLeft = MAX_ATTEMPTS;
-    await sendCaptchaChallenge(ctx, "Rasmda ko'rsatilgan raqamlarni kiriting.");
+
+    const sent = await sendCaptchaChallenge(ctx, "Rasmda ko'rsatilgan raqamlarni kiriting.");
+    if (!sent) {
+      await joinWithoutCaptcha(ctx);
+      return ctx.scene.leave();
+    }
     return ctx.wizard.next();
   },
   // Step 1 — capture the answer, or a "new image" tap.
@@ -47,7 +73,11 @@ export const captchaJoinWizard = new Scenes.WizardScene<BotContext>(
 
     if (ctx.callbackQuery && 'data' in ctx.callbackQuery && ctx.callbackQuery.data === REGENERATE_ACTION) {
       await ctx.answerCbQuery();
-      await sendCaptchaChallenge(ctx, "Yangi rasm. Rasmda ko'rsatilgan raqamlarni kiriting.");
+      const sent = await sendCaptchaChallenge(ctx, "Yangi rasm. Rasmda ko'rsatilgan raqamlarni kiriting.");
+      if (!sent) {
+        await joinWithoutCaptcha(ctx);
+        return ctx.scene.leave();
+      }
       return;
     }
 
@@ -71,10 +101,14 @@ export const captchaJoinWizard = new Scenes.WizardScene<BotContext>(
       return ctx.scene.leave();
     }
 
-    await sendCaptchaChallenge(
+    const sent = await sendCaptchaChallenge(
       ctx,
       `❌ Noto'g'ri. Qayta urinib ko'ring (qolgan urinishlar: ${state.attemptsLeft}).`,
     );
+    if (!sent) {
+      await joinWithoutCaptcha(ctx);
+      return ctx.scene.leave();
+    }
   },
 );
 
