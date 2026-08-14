@@ -7,6 +7,7 @@ import { checkRequiredSubscriptions } from './subscription.service';
 import { selectWinners } from './winner.service';
 import { getBotUsername } from './botInfo.service';
 import { contestPostKeyboard } from '../keyboards/inline/contestPost.inline';
+import { getEnabledGlobalRequiredChannels } from './globalChannel.service';
 
 export type JoinResult =
   | { ok: true; alreadyJoined: boolean }
@@ -25,14 +26,23 @@ export async function joinContest(
     return { ok: false, reason: 'contest_not_active' };
   }
 
+  const channelsByChat = new Map<number, RequiredChannel>();
   if (contest.requireSubscription) {
-    const channelsToCheck: RequiredChannel[] = [
-      { chatId: contest.publishChannelId, title: contest.publishChannelTitle },
-      ...contest.requiredChannels,
-    ];
+    channelsByChat.set(contest.publishChannelId, {
+      chatId: contest.publishChannelId,
+      title: contest.publishChannelTitle,
+    });
+    for (const channel of contest.requiredChannels) channelsByChat.set(channel.chatId, channel);
+  }
+  // Superadmin's global required channels apply to every contest regardless of that
+  // contest's own requireSubscription setting — it's a bot-wide requirement, not one an
+  // individual contest can opt out of.
+  for (const channel of await getEnabledGlobalRequiredChannels()) channelsByChat.set(channel.chatId, channel);
+
+  if (channelsByChat.size > 0) {
     const { allSubscribed, missing } = await checkRequiredSubscriptions(
       telegram,
-      channelsToCheck,
+      [...channelsByChat.values()],
       user.telegramId,
     );
     if (!allSubscribed) {

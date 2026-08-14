@@ -8,6 +8,7 @@ import { addChannelWizard } from './scenes/addChannel.wizard';
 import { notifyWinnersWizard } from './scenes/notifyWinners.wizard';
 import { broadcastWizard } from './scenes/broadcast.wizard';
 import { captchaJoinWizard } from './scenes/captchaJoin.wizard';
+import { globalChannelWizard } from './scenes/globalChannel.wizard';
 import { registerStartHandler } from './handlers/start.handler';
 import { registerMainMenuHandlers } from './handlers/mainMenu.handler';
 import { registerMyChannelsHandlers } from './handlers/myChannels.handler';
@@ -17,6 +18,7 @@ import { registerAdminManagementHandlers } from './handlers/adminManagement.hand
 import { registerBroadcastHandlers } from './handlers/broadcast.handler';
 import { registerBotMembershipHandler } from './handlers/botMembership.handler';
 import { registerBotUsersHandler } from './handlers/botUsers.handler';
+import { registerGlobalChannelsHandlers } from './handlers/globalChannels.handler';
 
 export const bot = new Telegraf<BotContext>(env.BOT_TOKEN);
 
@@ -26,6 +28,7 @@ const stage = new Scenes.Stage<BotContext>([
   notifyWinnersWizard,
   broadcastWizard,
   captchaJoinWizard,
+  globalChannelWizard,
 ]);
 
 bot.use(sessionMiddleware);
@@ -51,6 +54,7 @@ registerAdminManagementHandlers(bot);
 registerBroadcastHandlers(bot);
 registerBotMembershipHandler(bot);
 registerBotUsersHandler(bot);
+registerGlobalChannelsHandlers(bot);
 
 bot.catch((err, ctx) => {
   console.error(`[bot] error while handling update ${ctx.updateType}`, err);
