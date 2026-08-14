@@ -7,11 +7,12 @@ import { checkRequiredSubscriptions } from './subscription.service';
 import { selectWinners } from './winner.service';
 import { getBotUsername } from './botInfo.service';
 import { contestPostKeyboard } from '../keyboards/inline/contestPost.inline';
+import { joinRecheckKeyboard } from '../keyboards/inline/joinRecheck.inline';
 import { getEnabledGlobalRequiredChannels } from './globalChannel.service';
 
 export type JoinResult =
   | { ok: true; alreadyJoined: boolean }
-  | { ok: false; reason: 'not_subscribed'; missing: RequiredChannel[] }
+  | { ok: false; reason: 'not_subscribed'; contestId: string; missing: RequiredChannel[] }
   | { ok: false; reason: 'contest_not_active' };
 
 const DUPLICATE_KEY_ERROR_CODE = 11000;
@@ -46,7 +47,7 @@ export async function joinContest(
       user.telegramId,
     );
     if (!allSubscribed) {
-      return { ok: false, reason: 'not_subscribed', missing };
+      return { ok: false, reason: 'not_subscribed', contestId, missing };
     }
   }
 
@@ -114,7 +115,10 @@ export async function replyJoinResult(ctx: BotContext, result: JoinResult): Prom
 
   if (result.reason === 'not_subscribed') {
     const list = result.missing.map((c) => (c.username ? `@${c.username}` : c.title)).join(', ');
-    await ctx.reply(`Iltimos, quyidagilarga obuna bo'ling: ${list}`);
+    await ctx.reply(
+      `Iltimos, quyidagilarga obuna bo'ling: ${list}\n\nObuna bo'lgach, "Obuna bo'ldim" tugmasini bosing.`,
+      joinRecheckKeyboard(result.contestId),
+    );
     return;
   }
 
