@@ -26,6 +26,8 @@ async function handleContestJoinDeepLink(ctx: BotContext, contestId: string): Pr
   const result = await joinContest(ctx.telegram, contestId, {
     telegramId: ctx.from.id,
     username: ctx.from.username,
+    firstName: ctx.from.first_name,
+    lastName: ctx.from.last_name,
   });
   await replyJoinResult(ctx, result);
 }

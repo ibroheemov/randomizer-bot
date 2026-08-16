@@ -49,6 +49,8 @@ async function joinWithoutCaptcha(ctx: BotContext): Promise<void> {
   const result = await joinContest(ctx.telegram, state.contestId, {
     telegramId: ctx.from.id,
     username: ctx.from.username,
+    firstName: ctx.from.first_name,
+    lastName: ctx.from.last_name,
   });
   await replyJoinResult(ctx, result);
 }
@@ -88,6 +90,8 @@ export const captchaJoinWizard = new Scenes.WizardScene<BotContext>(
       const result = await joinContest(ctx.telegram, state.contestId, {
         telegramId: ctx.from.id,
         username: ctx.from.username,
+        firstName: ctx.from.first_name,
+        lastName: ctx.from.last_name,
       });
       await replyJoinResult(ctx, result);
       return ctx.scene.leave();
