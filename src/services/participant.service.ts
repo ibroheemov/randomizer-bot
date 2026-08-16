@@ -16,6 +16,49 @@ export type JoinResult =
   | { ok: false; reason: 'contest_not_active' };
 
 const DUPLICATE_KEY_ERROR_CODE = 11000;
+const PARTICIPANT_COUNT_REFRESH_INTERVAL_MS = 3000;
+const scheduledCountRefreshes = new Set<string>();
+
+async function refreshParticipantCountOnPost(telegram: Telegram, contestId: string): Promise<void> {
+  try {
+    const contest = await Contest.findById(contestId);
+    if (!contest?.messageId) return;
+
+    const botUsername = await getBotUsername(telegram);
+    const keyboard = contestPostKeyboard(
+      botUsername,
+      contestId,
+      contest.buttonText,
+      contest.participantsCount,
+    );
+    await telegram.editMessageReplyMarkup(
+      contest.publishChannelId,
+      contest.messageId,
+      undefined,
+      keyboard.reply_markup,
+    );
+  } catch (err) {
+    console.error('[participant.service] failed to refresh participant count on post', err);
+  }
+}
+
+/**
+ * Editing the channel post on every single join means one Telegram API call per join — under
+ * a burst (many people tapping Participate within seconds of each other) that blows straight
+ * through Telegram's roughly one-edit-per-second-per-message limit, and awaiting it inline
+ * would hold every join behind a growing queue of throttled/failing edits. Instead, coalesce a
+ * burst for the same contest into at most one edit every few seconds (always reading the
+ * freshest count when it actually fires), and never block the caller on it.
+ */
+function scheduleParticipantCountRefresh(telegram: Telegram, contestId: string): void {
+  if (scheduledCountRefreshes.has(contestId)) return;
+  scheduledCountRefreshes.add(contestId);
+
+  setTimeout(() => {
+    scheduledCountRefreshes.delete(contestId);
+    void refreshParticipantCountOnPost(telegram, contestId);
+  }, PARTICIPANT_COUNT_REFRESH_INTERVAL_MS);
+}
 
 export async function joinContest(
   telegram: Telegram,
@@ -73,23 +116,7 @@ export async function joinContest(
   );
 
   if (updated?.messageId) {
-    try {
-      const botUsername = await getBotUsername(telegram);
-      const keyboard = contestPostKeyboard(
-        botUsername,
-        String(updated._id),
-        updated.buttonText,
-        updated.participantsCount,
-      );
-      await telegram.editMessageReplyMarkup(
-        updated.publishChannelId,
-        updated.messageId,
-        undefined,
-        keyboard.reply_markup,
-      );
-    } catch (err) {
-      console.error('[participant.service] failed to refresh participant count on post', err);
-    }
+    scheduleParticipantCountRefresh(telegram, String(updated._id));
   }
 
   if (

@@ -23,13 +23,25 @@ export async function getOrCreateUser(from: TelegramFrom): Promise<UserDocument>
   const existing = await User.findOne({ telegramId: from.id });
 
   if (existing) {
-    existing.username = from.username;
-    existing.firstName = from.first_name;
-    existing.lastName = from.last_name;
-    if (from.id === env.SUPERADMIN_TELEGRAM_ID && existing.role !== 'superadmin') {
-      existing.role = 'superadmin';
+    // attachUser runs this on literally every incoming update — writing unconditionally here
+    // meant every single tap/message issued a DB write even when nothing about the user had
+    // actually changed, which is pure overhead under a burst of activity (e.g. many people
+    // tapping Participate within seconds of each other). Only touch the DB when something did.
+    const shouldPromote = from.id === env.SUPERADMIN_TELEGRAM_ID && existing.role !== 'superadmin';
+    const changed =
+      existing.username !== from.username ||
+      existing.firstName !== from.first_name ||
+      existing.lastName !== from.last_name ||
+      shouldPromote;
+
+    if (changed) {
+      existing.username = from.username;
+      existing.firstName = from.first_name;
+      existing.lastName = from.last_name;
+      if (shouldPromote) existing.role = 'superadmin';
+      await existing.save();
     }
-    await existing.save();
+
     return existing;
   }
 

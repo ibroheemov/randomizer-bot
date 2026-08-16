@@ -21,12 +21,17 @@ export async function checkRequiredSubscriptions(
   channels: RequiredChannel[],
   userId: number,
 ): Promise<{ allSubscribed: boolean; missing: RequiredChannel[] }> {
-  const missing: RequiredChannel[] = [];
+  // Each check is its own Telegram API round trip — under a join burst, checking channels
+  // one at a time serializes that latency per user on top of everyone else's. Parallelizing
+  // just the calls for a single user's own channel list cuts each join's latency down to the
+  // slowest single channel check instead of their sum.
+  const results = await Promise.all(
+    channels.map(async (channel) => ({
+      channel,
+      subscribed: await isSubscribed(telegram, channel.chatId, userId),
+    })),
+  );
 
-  for (const channel of channels) {
-    const subscribed = await isSubscribed(telegram, channel.chatId, userId);
-    if (!subscribed) missing.push(channel);
-  }
-
+  const missing = results.filter((r) => !r.subscribed).map((r) => r.channel);
   return { allSubscribed: missing.length === 0, missing };
 }
