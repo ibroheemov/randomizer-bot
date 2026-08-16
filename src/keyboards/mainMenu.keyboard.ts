@@ -8,7 +8,6 @@ export const MAIN_MENU_BUTTONS = {
   CREATE_CONTEST: 'Konkurs yaratish 🎲',
   MY_CONTESTS: 'Konkurslarim 🗃',
   MY_CHANNELS: 'Kanallarim 📂',
-  SUPPORT: 'Yordam 💬',
   NOTIFY_USERS: 'Xabar Yuborish 📢',
   BOT_USERS: 'Foydalanuvchilar 👥',
   ADMINS: 'Adminlar 👤',
@@ -19,7 +18,7 @@ export const MAIN_MENU_BUTTONS = {
 export function mainMenuKeyboard(role: Role) {
   const rows: string[][] = [
     [MAIN_MENU_BUTTONS.CREATE_CONTEST, MAIN_MENU_BUTTONS.MY_CONTESTS],
-    [MAIN_MENU_BUTTONS.MY_CHANNELS, MAIN_MENU_BUTTONS.SUPPORT],
+    [MAIN_MENU_BUTTONS.MY_CHANNELS],
   ];
 
   if (role === 'superadmin') {
