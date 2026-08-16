@@ -11,6 +11,7 @@ import {
 import { listVisibleContests } from '../services/contest.service';
 import { selectWinners } from '../services/winner.service';
 import { formatTashkentDateTime } from '../utils/datetime';
+import { formatWinnerMention } from '../utils/text';
 import { Contest, ContestDocument } from '../models/Contest.model';
 import { requireRole } from '../services/user.service';
 import { NOTIFY_WINNERS_WIZARD_ID } from '../scenes/notifyWinners.wizard';
@@ -63,11 +64,7 @@ export function registerMyContestsHandlers(bot: Telegraf<BotContext>): void {
     ];
 
     if (contest.winners.length > 0) {
-      lines.push(
-        '',
-        "🏆 G'oliblar:",
-        ...contest.winners.map((w) => (w.username ? `@${w.username}` : `ID ${w.telegramId}`)),
-      );
+      lines.push('', "🏆 G'oliblar:", ...contest.winners.map((w) => formatWinnerMention(w)));
     }
 
     const isOwner = contest.ownerTelegramId === user.telegramId;
@@ -78,7 +75,7 @@ export function registerMyContestsHandlers(bot: Telegraf<BotContext>): void {
       canEnd: contest.status === 'published' && canManage,
     });
 
-    await ctx.reply(lines.join('\n'), keyboard);
+    await ctx.reply(lines.join('\n'), { parse_mode: 'HTML', ...keyboard });
   });
 
   bot.action(new RegExp(`^${NOTIFY_WINNERS_ACTION_PREFIX}([a-f0-9]+)$`), async (ctx) => {

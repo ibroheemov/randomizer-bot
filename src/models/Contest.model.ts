@@ -50,6 +50,8 @@ const winnerSchema = new Schema<ContestWinner>(
   {
     telegramId: { type: Number, required: true },
     username: { type: String },
+    firstName: { type: String },
+    lastName: { type: String },
   },
   { _id: false },
 );

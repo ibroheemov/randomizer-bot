@@ -16,4 +16,6 @@ export interface RequiredChannel {
 export interface ContestWinner {
   telegramId: number;
   username?: string;
+  firstName?: string;
+  lastName?: string;
 }

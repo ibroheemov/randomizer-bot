@@ -12,6 +12,8 @@ export function registerJoinRecheckHandler(bot: Telegraf<BotContext>): void {
     const result = await joinContest(ctx.telegram, contestId, {
       telegramId: ctx.from.id,
       username: ctx.from.username,
+      firstName: ctx.from.first_name,
+      lastName: ctx.from.last_name,
     });
     await replyJoinResult(ctx, result);
   });

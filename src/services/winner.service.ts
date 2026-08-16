@@ -3,6 +3,7 @@ import { Contest, ContestDocument } from '../models/Contest.model';
 import { Participant } from '../models/Participant.model';
 import { sampleWithoutReplacement } from '../utils/random';
 import { contestDetailKeyboard } from '../keyboards/inline/contestDetail.inline';
+import { escapeHtml, formatWinnerMention } from '../utils/text';
 
 /**
  * Atomically claims the contest (published -> completed) before computing winners, so a
@@ -20,6 +21,8 @@ export async function selectWinners(telegram: Telegram, contestId: unknown): Pro
   const winners = sampleWithoutReplacement(participants, claimed.winnersCount).map((p) => ({
     telegramId: p.telegramId,
     username: p.username,
+    firstName: p.firstName,
+    lastName: p.lastName,
   }));
 
   const updated = await Contest.findByIdAndUpdate(claimed._id, { $set: { winners } }, { new: true });
@@ -32,11 +35,7 @@ function buildResultsLines(contest: ContestDocument): string[] {
   if (contest.winners.length === 0) {
     lines.push('Bu konkursda hech kim ishtirok etmadi.');
   } else {
-    lines.push(
-      ...contest.winners.map(
-        (w, i) => `${i + 1}. ${w.username ? '@' + w.username : `ID ${w.telegramId}`}`,
-      ),
-    );
+    lines.push(...contest.winners.map((w, i) => `${i + 1}. ${formatWinnerMention(w)}`));
   }
 
   return lines;
@@ -46,18 +45,25 @@ async function announceResults(telegram: Telegram, contest: ContestDocument): Pr
   const lines = buildResultsLines(contest);
 
   try {
-    await telegram.sendMessage(contest.publishChannelId, lines.join('\n'));
+    await telegram.sendMessage(contest.publishChannelId, lines.join('\n'), { parse_mode: 'HTML' });
   } catch (err) {
     console.error('[winner.service] failed to announce results in channel', err);
   }
 
   try {
-    const ownerLines = [`🏁 "${contest.text.slice(0, 40)}" konkursi yakunlandi.`, '', ...lines];
+    const ownerLines = [
+      `🏁 "${escapeHtml(contest.text.slice(0, 40))}" konkursi yakunlandi.`,
+      '',
+      ...lines,
+    ];
     const keyboard = contestDetailKeyboard(String(contest._id), {
       canNotify: contest.winners.length > 0,
       canRemove: false,
     });
-    await telegram.sendMessage(contest.ownerTelegramId, ownerLines.join('\n'), keyboard);
+    await telegram.sendMessage(contest.ownerTelegramId, ownerLines.join('\n'), {
+      parse_mode: 'HTML',
+      ...keyboard,
+    });
   } catch (err) {
     console.error('[winner.service] failed to notify contest owner', err);
   }

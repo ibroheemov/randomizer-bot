@@ -20,7 +20,7 @@ const DUPLICATE_KEY_ERROR_CODE = 11000;
 export async function joinContest(
   telegram: Telegram,
   contestId: string,
-  user: { telegramId: number; username?: string },
+  user: { telegramId: number; username?: string; firstName?: string; lastName?: string },
 ): Promise<JoinResult> {
   const contest = await Contest.findById(contestId);
   if (!contest || contest.status !== 'published') {
@@ -56,6 +56,8 @@ export async function joinContest(
       contestId: contest._id,
       telegramId: user.telegramId,
       username: user.username,
+      firstName: user.firstName,
+      lastName: user.lastName,
     });
   } catch (err) {
     if (typeof err === 'object' && err !== null && 'code' in err && err.code === DUPLICATE_KEY_ERROR_CODE) {
